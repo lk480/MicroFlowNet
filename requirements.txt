@@ -1,0 +1,8 @@
+numpy
+matplotlib
+tensorflow-macos
+tensorflow-metal
+keras
+keras_cv
+Pillow
+opencv-python
