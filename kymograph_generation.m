@@ -152,7 +152,7 @@ function [binary_image] = kymograph_generation(segmentation_file_path, image_seq
 
     %%%% STI SETTINGS %%%%%
     starting = 1;
-    N = 150;
+    N = 100;
     ending = N - starting + 1;
 
     index = sortedIndices(n);  % Get the index of the nth longest segment
@@ -189,12 +189,12 @@ function [binary_image] = kymograph_generation(segmentation_file_path, image_seq
     end
 
 % SEGMENT OF INTEREST %%%
-figure;
 imwrite(uint8(A_segment), '/Users/lohithkonathala/iib_project/vessel_segment.png');
 
-%%%%%% DISPLAY STI %%%%
+%%%%%% SAVE KYMOGRAPH %%%%
 figure;
-imwrite(STI, '/Users/lohithkonathala/iib_project/central_axis_kymograph.png');
+imshow(STI, []);
+uiwait(gcf);
 
 end
 
