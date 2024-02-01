@@ -192,9 +192,19 @@ function [binary_image] = kymograph_generation(segmentation_file_path, image_seq
 imwrite(uint8(A_segment), '/Users/lohithkonathala/iib_project/vessel_segment.png');
 
 %%%%%% SAVE KYMOGRAPH %%%%
+minSTI = min(STI(:));
+maxSTI = max(STI(:));
+scaledSTI = (STI - minSTI) / (maxSTI - minSTI);
+
+if isinteger(STI)
+    scaledSTI = im2uint8(scaledSTI); % Convert to uint8 or use im2uint16 for uint16, etc.
+end
+imwrite(scaledSTI, '/Users/lohithkonathala/iib_project/central_axis_kymograph.png');
+
 figure;
 imshow(STI, []);
 uiwait(gcf);
+
 
 end
 
