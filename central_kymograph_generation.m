@@ -1,4 +1,4 @@
-function [binary_image] = kymograph_generation(segmentation_file_path, image_sequence_dir)
+function [binary_image] = central_kymograph_generation(segmentation_file_path, image_sequence_dir)
     % Load Segmentation 
     if exist(segmentation_file_path, 'file') ~= 2
         error('File not found: %s', segmentation_file_path);
