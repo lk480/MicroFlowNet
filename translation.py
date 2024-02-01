@@ -22,36 +22,25 @@ def draw_points(image, shape, x_coords, y_coords, color):
         if 0 <= x < shape[1] and 0 <= y < shape[0]:
             image[int(y), int(x)] = color
 
-#Load Vessel Segment
-segment =  mpimg.imread('/Users/lohithkonathala/iib_project/vessel_segment.png')
-height, width = np.shape(segment)
-#Convert Segment Image to Binary
-threshold_value = 0.25
-binary_segment = (segment > threshold_value).astype(np.float32)
-binary_segment_array = np.array(binary_segment)
-#Locate Pixel Centres
-pixels = np.argwhere(binary_segment_array == np.amax(binary_segment_array))
-y_data, x_data = pixels.T
-#Fit Parametric Spline
-tck, u = splprep([x_data, y_data], s=8, k=1)
-unew = np.linspace(0, 1, 1500)
-out = splev(unew, tck)
-out_dx_dy = splev(unew, tck, der=1)
-#Translation 
-translated_points = translate_spline(out, out_dx_dy, translation_factor = 12)
-pos_spline_coords = np.unique(np.ceil(translated_points).astype(int), axis=0)
-#Create New Vessel Segment
-image = np.zeros((height, width, 3), dtype=np.uint8)
-draw_points(image, (height, width), pos_spline_coords[:, 0], pos_spline_coords[:, 1], color=[0, 255, 0])  
-img = Image.fromarray(image)
-plt.imshow(img)
-plt.axis('off')
-plt.show()
 
 
+def get_pixel_data(file_path):
+    segment = mpimg.imread(file_path)
+    img_shape = np.shape(segment)
+    threshold_value = 0.25
+    binary_segment = (segment > threshold_value).astype(np.float32)
+    binary_segment_array = np.array(binary_segment)
+    #Locate Pixel Centres
+    pixels = np.argwhere(binary_segment_array == np.amax(binary_segment_array))
+    y_data, x_data = pixels.T
+    return x_data, y_data, img_shape
 
-
-
+def param_spline(x_data, y_data, smoothing_factor = 8, order = 1):
+    tck, u = splprep([x_data, y_data], s=smoothing_factor, k=order)
+    unew = np.linspace(0, 1, 1500)
+    out = splev(unew, tck)
+    out_dx_dy = splev(unew, tck, der=1)
+    return out, out_dx_dy
 
 
 
