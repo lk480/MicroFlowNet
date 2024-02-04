@@ -40,12 +40,19 @@ eng.quit()
 #Generate Offset Axis Kymograph 
 x_data, y_data, img_shape = get_pixel_data(segment_file_path)
 height, width = img_shape
+
 #Fit Parametric Spline and Translate
-out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 1)
-translated_points = translate_spline(out, out_dx_dy, translation_factor = 10)
+out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2)
+translated_points = translate_spline(out, out_dx_dy, translation_factor =4)
 image = np.zeros((height, width, 3), dtype=np.uint8)
 pos_spline_coords = np.unique(np.ceil(translated_points).astype(int), axis=0)
 draw_points(image, img_shape, pos_spline_coords[:, 0], pos_spline_coords[:, 1], color=[255, 255, 255])
 img = Image.fromarray(image)
 img.save(translated_segment_file_path)
+
+
+eng = matlab.engine.start_matlab()
+binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir)
+eng.quit()
+
 

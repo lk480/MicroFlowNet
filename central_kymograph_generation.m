@@ -200,7 +200,7 @@ if isinteger(STI)
     scaledSTI = im2uint8(scaledSTI); % Convert to uint8 or use im2uint16 for uint16, etc.
 end
 imwrite(scaledSTI, '/Users/lohithkonathala/iib_project/central_axis_kymograph.png');
-
+disp(['Size of STI image: ', num2str(size(STI))]);
 figure;
 imshow(STI, []);
 uiwait(gcf);

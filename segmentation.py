@@ -57,7 +57,6 @@ def SA_UNet(input_size=(None, None, 3), block_size=7,rate=0.1,start_neurons=16,l
     pool1 = MaxPooling2D((2, 2))(conv1)
 
 
-
     conv2 = Conv2D(start_neurons * 2, (3, 3), activation=None, padding="same")(pool1)
     conv2 = DropBlock2D(block_size=block_size, rate=rate)(conv2)
     conv2 = BatchNormalization()(conv2)
