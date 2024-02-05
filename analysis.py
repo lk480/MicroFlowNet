@@ -14,7 +14,7 @@ segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation
 image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine/'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
-weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_tuned_weights.h5'
+weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
 
 #Perform Vessel Segmentation 
 hvi_image = load_hvi_image(hvi_file_path)
@@ -31,7 +31,7 @@ else:
     predicted_segmentation = prediction[0]*255.0
     print(np.shape(predicted_segmentation))
     _, predicted_segmentation_thresholded = cv2.threshold(predicted_segmentation, 100, 255, cv2.THRESH_BINARY)
-    cv2.imwrite(segmentation_file_path, predicted_segmentation_thresholded)
+    cv2.imwrite(segmentation_file_path, predicted_segmentation)
 
 
 #Generate Central Axis Kymograph 
