@@ -30,8 +30,9 @@ else:
     prediction = model.predict(hvi_image_batched)
     predicted_segmentation = prediction[0]*255.0
     print(np.shape(predicted_segmentation))
-    plt.imshow(predicted_segmentation, cmap='gray')
-    cv2.imwrite(segmentation_file_path, predicted_segmentation)
+    _, predicted_segmentation_thresholded = cv2.threshold(predicted_segmentation, 100, 255, cv2.THRESH_BINARY)
+    cv2.imwrite(segmentation_file_path, predicted_segmentation_thresholded)
+
 
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
@@ -55,4 +56,3 @@ for t_factor in np.linspace(-4, 4, 3):
     print(np.round(t_factor, 1))
     binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor)
 eng.quit()
-
