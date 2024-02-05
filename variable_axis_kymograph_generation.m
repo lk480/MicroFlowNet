@@ -1,4 +1,4 @@
-function [binary_image] = variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir)
+function [binary_image] = variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor)
     if exist(translated_segment_file_path, 'file') ~= 2
         error('File not found: %s', segmentation_file_path);
     end
@@ -106,7 +106,22 @@ function [binary_image] = variable_axis_kymograph_generation(translated_segment_
     if isinteger(STI)
         scaledSTI = im2uint8(scaledSTI); % Convert to uint8 or use im2uint16 for uint16, etc.
     end
-    imwrite(scaledSTI, '/Users/lohithkonathala/iib_project/translated_axis_kymograph.png');
+
+    % Define your base directory
+    baseDir = '/Users/lohithkonathala/iib_project/';
+
+    % Define the folder where images will be saved
+    imagesFolder = 'kymographs';
+
+    % Create the full path for the images folder if it doesn't exist
+    imagesDir = fullfile(baseDir, imagesFolder);
+    if ~exist(imagesDir, 'dir')
+        mkdir(imagesDir);
+    end
+
+    rounded_t_factor = round(t_factor, 1); 
+    filename = sprintf('%s/translated_axis_kymograph_%0.1f.png', imagesDir, rounded_t_factor);
+    imwrite(scaledSTI, filename);
     disp(['Size of STI image: ', num2str(size(STI))]);
     figure;
     imshow(STI, []);

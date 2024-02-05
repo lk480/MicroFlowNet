@@ -79,7 +79,6 @@ def SA_UNet(input_size=(None, None, 3), block_size=7,rate=0.1,start_neurons=16,l
     conv3 = Activation('relu')(conv3)
     pool3 = MaxPooling2D((2, 2))(conv3)
 
-
     convm = Conv2D(start_neurons * 8, (3, 3), activation=None, padding="same")(pool3)
     convm = DropBlock2D(block_size=block_size, rate=rate)(convm)
     convm = BatchNormalization()(convm)
@@ -89,7 +88,6 @@ def SA_UNet(input_size=(None, None, 3), block_size=7,rate=0.1,start_neurons=16,l
     convm = DropBlock2D(block_size=block_size, rate=rate)(convm)
     convm = BatchNormalization()(convm)
     convm = Activation('relu')(convm)
-
 
     deconv3 = Conv2DTranspose(start_neurons * 4, (3, 3), strides=(2, 2), padding="same")(convm)
     uconv3 = concatenate([deconv3, conv3])
@@ -117,7 +115,6 @@ def SA_UNet(input_size=(None, None, 3), block_size=7,rate=0.1,start_neurons=16,l
 
     deconv1 = Conv2DTranspose(start_neurons * 1, (3, 3), strides=(2, 2), padding="same")(uconv2)
     uconv1 = concatenate([deconv1, conv1])
-
 
     uconv1 = Conv2D(start_neurons * 1, (3, 3), activation=None, padding="same")(uconv1)
     uconv1 = DropBlock2D(block_size=block_size, rate=rate)(uconv1)

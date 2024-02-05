@@ -1,2 +1,4 @@
 iib_project_env/
 *.png
+__pycache__/
+

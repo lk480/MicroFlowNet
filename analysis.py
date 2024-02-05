@@ -5,7 +5,7 @@ import numpy as np
 import matlab.engine
 import cv2
 from PIL import Image
-from segmentation import load_hvi_image, SA_UNet
+from segmentation_model import load_hvi_image, SA_UNet
 from translation import get_pixel_data, param_spline, translate_spline, draw_points
 
 #Specify Directories
@@ -14,11 +14,12 @@ segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation
 image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine/'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
+weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_tuned_weights.h5'
 
 #Perform Vessel Segmentation 
 hvi_image = load_hvi_image(hvi_file_path)
 model = SA_UNet()
-model.load_weights('/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5')
+model.load_weights(weight_file_path)
 hvi_image_batched = tf.expand_dims(hvi_image, axis=0)
 
 if np.shape(hvi_image_batched)[0] is None:
@@ -37,22 +38,21 @@ eng = matlab.engine.start_matlab()
 binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir)
 eng.quit()
 
-#Generate Offset Axis Kymograph 
 x_data, y_data, img_shape = get_pixel_data(segment_file_path)
 height, width = img_shape
 
-#Fit Parametric Spline and Translate
-out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2)
-translated_points = translate_spline(out, out_dx_dy, translation_factor =4)
-image = np.zeros((height, width, 3), dtype=np.uint8)
-pos_spline_coords = np.unique(np.ceil(translated_points).astype(int), axis=0)
-draw_points(image, img_shape, pos_spline_coords[:, 0], pos_spline_coords[:, 1], color=[255, 255, 255])
-img = Image.fromarray(image)
-img.save(translated_segment_file_path)
-
-
+#Generate Profile Kymographs 
 eng = matlab.engine.start_matlab()
-binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir)
+for t_factor in np.linspace(-4, 4, 3):
+    #Fit Parametric Spline and Translate
+    out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2)
+    translated_points = translate_spline(out, out_dx_dy, translation_factor = t_factor)
+    image = np.zeros((height, width, 3), dtype=np.uint8)
+    pos_spline_coords = np.unique(np.ceil(translated_points).astype(int), axis=0)
+    draw_points(image, img_shape, pos_spline_coords[:, 0], pos_spline_coords[:, 1], color=[255, 255, 255])
+    img = Image.fromarray(image)
+    img.save(translated_segment_file_path)
+    print(np.round(t_factor, 1))
+    binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor)
 eng.quit()
-
 

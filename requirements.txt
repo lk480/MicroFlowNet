@@ -7,3 +7,4 @@ keras_cv
 Pillow
 opencv-python
 scipy
+scikit-image 

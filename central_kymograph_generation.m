@@ -205,5 +205,4 @@ figure;
 imshow(STI, []);
 uiwait(gcf);
 
-
 end
