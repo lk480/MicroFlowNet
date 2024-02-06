@@ -11,7 +11,7 @@ def generate_FFT(stiv_array):
     fft_shifted = np.fft.fftshift(fft_image)
     magnitude_spectrum = np.abs(fft_shifted)
     log_magnitude_spectrum = np.log1p(magnitude_spectrum)
-    return magnitude_spectrum, log_magnitude_spectrum
+    return fft_shifted, magnitude_spectrum, log_magnitude_spectrum
 
 def low_pass_filter(stiv_array):
     blurred_image = cv2.GaussianBlur(stiv_array, (5, 5), 0)
@@ -92,12 +92,35 @@ def calculate_F_theta(magnitude_spectrum, angle, radius):
     
     return theta_bins, F_theta
 
+def angular_filter(angle, principal_direction_deg, bandwidth_deg):
+    # Convert degrees to radians
+    principal_direction_rad = np.deg2rad(principal_direction_deg)
+    bandwidth_rad = np.deg2rad(bandwidth_deg)
+
+    # Create the mask
+    lower_bound = principal_direction_rad - bandwidth_rad / 2
+    upper_bound = principal_direction_rad + bandwidth_rad / 2
+
+    # Handle the wrap-around at 0 and pi
+    lower_bound = lower_bound if lower_bound >= 0 else lower_bound + np.pi
+    upper_bound = upper_bound if upper_bound <= np.pi else upper_bound - np.pi
+
+    # Create the filter mask
+    if lower_bound < upper_bound:
+        filter_mask = (angle >= lower_bound) & (angle <= upper_bound)
+    else: # Wrap around case
+        filter_mask = (angle >= lower_bound) | (angle <= upper_bound)
+    
+    return filter_mask.astype(int)
+
 #Spatial FFT
 windowed_image = window_function(image)
-magnitude_spectrum, log_magnitude_spectrum = generate_FFT(windowed_image)
+fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(windowed_image)
 height, width = np.shape(log_magnitude_spectrum)
 log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
 log_magnitude_spectrum = np.expand_dims(log_magnitude_spectrum, -1)
+plt.imshow(log_magnitude_spectrum, cmap='gray')
+plt.show()
 #Convert Cartesian to Polar
 radius, angle = cartesian_to_polar(magnitude_spectrum)
 
@@ -122,6 +145,43 @@ plt.show()
 
 # Output the principal direction
 print(f"Principal Direction is {principal_direction}")
+
+# Convert to radians and adjust for the FFT's orthogonal representation
+principal_direction_rad = np.deg2rad(principal_direction)
+
+# Calculate line coordinates for the overlay
+# Assuming the center of the FFT is the origin (0,0)
+print(np.shape(log_magnitude_spectrum))
+center_y, center_x, _ = np.array(log_magnitude_spectrum.shape) // 2
+line_length = np.min([center_x, center_y])  # Line length is half the smallest dimension of the image
+
+# Calculate end points of the line
+dx = line_length * np.cos(principal_direction_rad)
+dy = line_length * np.sin(principal_direction_rad)
+x1, y1 = center_x - dx, center_y - dy
+x2, y2 = center_x + dx, center_y + dy
+
+# Plot the FFT image
+plt.imshow(log_magnitude_spectrum, cmap='gray')
+plt.colorbar()
+plt.plot([x1, x2], [y1, y2], 'r', linewidth=2)  # 'r' is the color red
+plt.show()
+
+#Apply Angular Filter to FFT
+J = angular_filter(angle, principal_direction, bandwidth_deg=20)
+plt.imshow(J)
+plt.show()
+
+filtered_FFT = fft_shifted * J
+filtered_image = np.fft.ifft2(np.fft.ifftshift(filtered_FFT))
+filtered_image_real = np.real(filtered_image)
+plt.imshow(filtered_image_real, cmap='gray')
+plt.show()
+
+#Sanity Check FFT of Inverse 
+fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(filtered_image_real)
+plt.imshow(log_magnitude_spectrum, cmap='gray')
+plt.show()
 
 
 

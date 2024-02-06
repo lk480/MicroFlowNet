@@ -33,7 +33,6 @@ else:
     _, predicted_segmentation_thresholded = cv2.threshold(predicted_segmentation, 100, 255, cv2.THRESH_BINARY)
     cv2.imwrite(segmentation_file_path, predicted_segmentation)
 
-
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
 binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir)
@@ -56,3 +55,4 @@ for t_factor in np.linspace(-4, 4, 3):
     print(np.round(t_factor, 1))
     binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor)
 eng.quit()
+

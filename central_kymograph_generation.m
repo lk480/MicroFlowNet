@@ -124,7 +124,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     [~,all_list_sorted] = sort(cellfun(@length,all_list));
 
     %%%%%%% CHOOSE VESSEL %%%%%%
-    n = 6;
+    n = 9;
 
     index = sortedIndices(n);  % Get the index of the nth longest segment
 
