@@ -92,6 +92,36 @@ def calculate_F_theta(magnitude_spectrum, angle, radius):
     
     return theta_bins, F_theta
 
+def angular_filter(log_magnitude_spectrum, lower_bound, upper_bound):
+    #Apply Angular Filter to FFT
+    rows, cols, _ = np.shape(log_magnitude_spectrum)
+    crow, ccol = rows // 2, cols // 2  # Center
+
+    # Create an array that holds the angles of each pixel relative to the center
+    y, x = np.ogrid[-crow:rows-crow, -ccol:cols-ccol]
+    angle = np.rad2deg(np.arctan2(y, x)) % 360.0  # Convert from radians to degrees and normalize to [0, 360)
+
+    lower_bound = lower_bound % 360
+    upper_bound = upper_bound % 360
+    shifted_lower_bound = (lower_bound + 180) % 360
+    shifted_upper_bound = (upper_bound + 180) % 360
+
+    # Create the original filter mask
+    if lower_bound < upper_bound:
+        original_filter_mask = (angle >= lower_bound) & (angle <= upper_bound)
+    else:  # Wrap around case
+        original_filter_mask = (angle >= lower_bound) | (angle <= upper_bound)
+
+    # Create the shifted filter mask
+    if shifted_lower_bound < shifted_upper_bound:
+        shifted_filter_mask = (angle >= shifted_lower_bound) & (angle <= shifted_upper_bound)
+    else:  # Wrap around case
+        shifted_filter_mask = (angle >= shifted_lower_bound) | (angle <= shifted_upper_bound)
+    # Combine both masks
+    filter_mask = original_filter_mask | shifted_filter_mask
+
+    return filter_mask
+
 #Spatial FFT
 windowed_image = window_function(image)
 fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
@@ -122,37 +152,8 @@ plt.colorbar()
 plt.plot([x1, x2], [y1, y2], 'r', linewidth=2)  # 'r' is the color red
 plt.show()
 
+filter_mask = angular_filter(log_magnitude_spectrum, 147, 192)
 
-#Apply Angular Filter to FFT
-rows, cols, _ = np.shape(log_magnitude_spectrum)
-crow, ccol = rows // 2, cols // 2  # Center
-
-# Create an array that holds the angles of each pixel relative to the center
-y, x = np.ogrid[-crow:rows-crow, -ccol:cols-ccol]
-angle = np.rad2deg(np.arctan2(y, x)) % 360.0  # Convert from radians to degrees and normalize to [0, 360)
-
-# Create the mask with the desired angular range
-lower_bound = 147
-upper_bound = 192
-
-lower_bound = lower_bound % 360
-upper_bound = upper_bound % 360
-shifted_lower_bound = (lower_bound + 180) % 360
-shifted_upper_bound = (upper_bound + 180) % 360
-
-# Create the original filter mask
-if lower_bound < upper_bound:
-    original_filter_mask = (angle >= lower_bound) & (angle <= upper_bound)
-else:  # Wrap around case
-    original_filter_mask = (angle >= lower_bound) | (angle <= upper_bound)
-
-# Create the shifted filter mask
-if shifted_lower_bound < shifted_upper_bound:
-    shifted_filter_mask = (angle >= shifted_lower_bound) & (angle <= shifted_upper_bound)
-else:  # Wrap around case
-    shifted_filter_mask = (angle >= shifted_lower_bound) | (angle <= shifted_upper_bound)
-# Combine both masks
-filter_mask = original_filter_mask | shifted_filter_mask
 #Apply mask
 fshift_masked = fft_shifted * filter_mask
 log_magnitude_spectrum_filtered = np.log1p(np.abs(fshift_masked))
