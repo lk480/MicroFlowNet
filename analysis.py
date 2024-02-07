@@ -35,7 +35,7 @@ else:
 
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
-binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir)
+binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, 1)
 eng.quit()
 
 x_data, y_data, img_shape = get_pixel_data(segment_file_path)
