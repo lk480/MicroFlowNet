@@ -1,4 +1,4 @@
-function [binary_image] = central_kymograph_generation(segmentation_file_path, image_sequence_dir)
+function [binary_image] = central_kymograph_generation(segmentation_file_path, image_sequence_dir, vessel_index)
     % Load Segmentation 
     if exist(segmentation_file_path, 'file') ~= 2
         error('File not found: %s', segmentation_file_path);
@@ -124,8 +124,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     [~,all_list_sorted] = sort(cellfun(@length,all_list));
 
     %%%%%%% CHOOSE VESSEL %%%%%%
-    n = 9;
-
+    n = vessel_index;
     index = sortedIndices(n);  % Get the index of the nth longest segment
 
     % Now find the actual segment using this index

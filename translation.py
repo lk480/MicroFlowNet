@@ -22,8 +22,6 @@ def draw_points(image, shape, x_coords, y_coords, color):
         if 0 <= x < shape[1] and 0 <= y < shape[0]:
             image[int(y), int(x)] = color
 
-
-
 def get_pixel_data(file_path):
     segment = mpimg.imread(file_path)
     img_shape = np.shape(segment)
