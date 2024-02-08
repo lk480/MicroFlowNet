@@ -30,12 +30,20 @@ def get_pixel_data(file_path):
     binary_segment_array = np.array(binary_segment)
     #Locate Pixel Centres
     pixels = np.argwhere(binary_segment_array == np.amax(binary_segment_array))
-    y_data, x_data = pixels.T
+    x_coords = []
+    y_coords = []
+    for coord in pixels:
+       x_coords.append(coord[1])
+       y_coords.append(coord[0])
+    xy_coords = list(zip(x_coords, y_coords))
+    xy_coords.sort()
+    xy_data = np.array(xy_coords)
+    x_data, y_data = xy_data.T
     return x_data, y_data, img_shape
 
-def param_spline(x_data, y_data, smoothing_factor = 8, order = 1):
+def param_spline(x_data, y_data, smoothing_factor, order):
     tck, u = splprep([x_data, y_data], s=smoothing_factor, k=order)
-    unew = np.linspace(0, 1, 1500)
+    unew = np.linspace(0, 1, 900)
     out = splev(unew, tck)
     out_dx_dy = splev(unew, tck, der=1)
     return out, out_dx_dy

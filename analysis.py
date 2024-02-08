@@ -16,6 +16,7 @@ segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
 
+
 #Perform Vessel Segmentation 
 hvi_image = load_hvi_image(hvi_file_path)
 model = SA_UNet()
@@ -33,9 +34,10 @@ else:
     _, predicted_segmentation_thresholded = cv2.threshold(predicted_segmentation, 100, 255, cv2.THRESH_BINARY)
     cv2.imwrite(segmentation_file_path, predicted_segmentation)
 
+
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
-binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, 1)
+binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, 6)
 eng.quit()
 
 x_data, y_data, img_shape = get_pixel_data(segment_file_path)
@@ -43,7 +45,7 @@ height, width = img_shape
 
 #Generate Profile Kymographs 
 eng = matlab.engine.start_matlab()
-for t_factor in np.linspace(-4, 4, 3):
+for t_factor in np.linspace(-7, 7, 5):
     #Fit Parametric Spline and Translate
     out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2)
     translated_points = translate_spline(out, out_dx_dy, translation_factor = t_factor)

@@ -25,7 +25,6 @@ def model_fine_tune(training_data, validation_data, pretrained_weight_filepath, 
     model.fit(training_data, epochs=10, callbacks=[reduce_lr], validation_data=validation_data)
     model.save(fine_tuned_weight_filepath)
 
-
 #Load HVI and Ground Truths
 x1 = load_hvi_image('/Users/lohithkonathala/Documents/IIB Project/HVI_Manual_Annotations/jed_eye_affine_MII.pgm')
 x2 = load_hvi_image('/Users/lohithkonathala/Documents/IIB Project/HVI_Manual_Annotations/lohith_eye_affine_MII.pgm')

@@ -14,7 +14,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     
     % Skeletonize Segmentation
     bw_skel = bwmorph(binary_image, 'skel', inf);
-    bw_skel_clean = bwmorph(bw_skel, 'spur', 2);
+    bw_skel_clean = bwmorph(bw_skel, 'spur', 5);
     disp(size(bw_skel_clean));
 
     %Skeletonised Segmentation

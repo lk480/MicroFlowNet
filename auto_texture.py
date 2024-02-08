@@ -2,9 +2,9 @@ import cv2
 import numpy as np 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import os
 
-image_path = '/Users/lohithkonathala/iib_project/central_axis_kymograph.png'
-image = mpimg.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
 
 def generate_FFT(stiv_array):
     fft_image = np.fft.fft2(stiv_array)
@@ -37,8 +37,9 @@ def histogram_of_gradients(image, visualize=True):
     # Construct a histogram of orientations, weighted by gradient magnitude
     hist, bins = np.histogram(orientation, bins=360, range=(0, 360), weights=magnitude)
     hist[0] = 0  # Clear the erroneous peak at 0 degrees if necessary
+    hist[90] = 0
     hist[180] = 0  # Clear the erroneous peak at 180 degrees if necessary
-
+    hist[270] = 0
     if visualize:
         # Visualization
         plt.figure(figsize=(10, 6))
@@ -122,52 +123,55 @@ def angular_filter(log_magnitude_spectrum, lower_bound, upper_bound):
 
     return filter_mask
 
-#Spatial FFT
-windowed_image = window_function(image)
-fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
-height, width = np.shape(log_magnitude_spectrum)
-log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
-log_magnitude_spectrum = np.expand_dims(log_magnitude_spectrum, -1)
-plt.imshow(log_magnitude_spectrum, cmap='gray')
-plt.show()
 
-histogram_of_gradients(image, visualize=True)
+files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
+for file_name in files:
+    print(file_name[-8:-4])
+    file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_will', file_name)
+    image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    
+    #Spatial FFT
+    windowed_image = window_function(image)
+    fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
+    height, width = np.shape(log_magnitude_spectrum)
+    log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
+    log_magnitude_spectrum = np.expand_dims(log_magnitude_spectrum, -1)
 
-print(np.shape(log_magnitude_spectrum))
-center_y, center_x, _ = np.array(log_magnitude_spectrum.shape) // 2
-line_length = np.min([center_x, center_y])  # Line length is half the smallest dimension of the image
+    histogram_of_gradients(image, visualize=True)
 
-principal_direction = -np.abs(180-147.4) 
-principal_direction_rad = np.deg2rad(principal_direction)
+    print(np.shape(log_magnitude_spectrum))
+    center_y, center_x, _ = np.array(log_magnitude_spectrum.shape) // 2
+    line_length = np.min([center_x, center_y])  # Line length is half the smallest dimension of the image
+    print(line_length)
 
-# Calculate end points of the line
-dx = line_length * np.cos(principal_direction_rad)
-dy = line_length * np.sin(principal_direction_rad)
-x1, y1 = center_x - dx, center_y - dy
-x2, y2 = center_x + dx, center_y + dy
+    principal_direction = np.abs(77.9) 
+    principal_direction_rad = np.deg2rad(principal_direction)
 
-# Plot the FFT image
-plt.imshow(log_magnitude_spectrum, cmap='gray')
-plt.colorbar()
-plt.plot([x1, x2], [y1, y2], 'r', linewidth=2)  # 'r' is the color red
-plt.show()
+    # Calculate end points of the line
+    dx = line_length * np.cos(principal_direction_rad)
+    dy = line_length * np.sin(principal_direction_rad)
+    x1, y1 = center_x - dx, center_y - dy
+    x2, y2 = center_x + dx, center_y + dy
 
-filter_mask = angular_filter(log_magnitude_spectrum, 147, 192)
+    # Plot the FFT image
+    plt.imshow(image, cmap='gray')
+    plt.colorbar()
+    plt.plot([x1, x2], [y1, y2], 'r', linewidth=2)  # 'r' is the color red
+    plt.show()
 
-#Apply mask
-fshift_masked = fft_shifted * filter_mask
-log_magnitude_spectrum_filtered = np.log1p(np.abs(fshift_masked))
-plt.imshow(log_magnitude_spectrum_filtered, cmap='gray')
-plt.show()
+    filter_mask = angular_filter(log_magnitude_spectrum, 147, 192)
 
-#Invert FFT
-f_ishift = np.fft.ifftshift(fshift_masked)
-denoised_image = np.fft.ifft2(f_ishift)
-denoised_image = np.abs(denoised_image)
-denoised_image_inv = 255-denoised_image
-plt.imshow(denoised_image_inv, cmap='gray')
-plt.show()
+    #Apply mask
+    fshift_masked = fft_shifted * filter_mask
+    log_magnitude_spectrum_filtered = np.log1p(np.abs(fshift_masked))
+    #plt.imshow(log_magnitude_spectrum_filtered, cmap='gray')
 
+    #Invert FFT
+    f_ishift = np.fft.ifftshift(fshift_masked)
+    denoised_image = np.fft.ifft2(f_ishift)
+    denoised_image = np.abs(denoised_image)
+    denoised_image_inv = 255-denoised_image
+    #plt.imshow(denoised_image_inv, cmap='gray')
 
 
 
