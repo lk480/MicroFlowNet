@@ -67,7 +67,7 @@ function [binary_image] = variable_axis_kymograph_generation(translated_segment_
 
     %%%% STI SETTINGS %%%%%
     starting = 1;
-    N = 100;
+    N = 50;
     ending = N - starting + 1;
 
     % place holder empty image

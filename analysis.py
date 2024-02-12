@@ -45,7 +45,7 @@ height, width = img_shape
 
 #Generate Profile Kymographs 
 eng = matlab.engine.start_matlab()
-for t_factor in np.linspace(-7, 7, 5):
+for t_factor in np.linspace(-5, 5, 10):
     #Fit Parametric Spline and Translate
     out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2)
     translated_points = translate_spline(out, out_dx_dy, translation_factor = t_factor)

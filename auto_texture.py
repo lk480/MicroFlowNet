@@ -4,8 +4,6 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import os
 
-
-
 def generate_FFT(stiv_array):
     fft_image = np.fft.fft2(stiv_array)
     fft_shifted = np.fft.fftshift(fft_image)
@@ -21,7 +19,6 @@ def low_pass_filter(stiv_array):
 def histogram_of_gradients(image, visualize=True):
     # Preprocess the image with Gaussian Blur to reduce noise
     blurred_image = cv2.GaussianBlur(image, (5, 5), 0)
-
     # Normalize the image
     normalized_image = np.uint8(255 * blurred_image / np.max(blurred_image))
 
@@ -36,10 +33,12 @@ def histogram_of_gradients(image, visualize=True):
 
     # Construct a histogram of orientations, weighted by gradient magnitude
     hist, bins = np.histogram(orientation, bins=360, range=(0, 360), weights=magnitude)
-    hist[0] = 0  # Clear the erroneous peak at 0 degrees if necessary
+    hist[0] = 0
     hist[90] = 0
-    hist[180] = 0  # Clear the erroneous peak at 180 degrees if necessary
+    hist[180] = 0
     hist[270] = 0
+    hist[300:360] = 0
+    
     if visualize:
         # Visualization
         plt.figure(figsize=(10, 6))
@@ -123,10 +122,26 @@ def angular_filter(log_magnitude_spectrum, lower_bound, upper_bound):
 
     return filter_mask
 
+# List all files in the directory
+files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
+
+# Function to extract the translation factor from the file name
+def get_translation_factor(file_name):
+    # Extract the part of the file name that contains the translation factor
+    factor_part = file_name.split('_')[-1]  # Splits by underscore and takes the last part
+    # Convert to float
+    try:
+        return float(factor_part[:-4])  # Removes the last 4 characters (e.g., ".png") and converts to float
+    except ValueError:
+        return 0.0  # Default value in case of any conversion error
+
+# Sort files by their translation factors
+sorted_files = sorted(files, key=get_translation_factor)
+
 
 files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
-for file_name in files:
-    print(file_name[-8:-4])
+for file_name in sorted_files:
+    print(f"Translation Factor {get_translation_factor(file_name)}")
     file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_will', file_name)
     image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
     
@@ -144,7 +159,7 @@ for file_name in files:
     line_length = np.min([center_x, center_y])  # Line length is half the smallest dimension of the image
     print(line_length)
 
-    principal_direction = np.abs(77.9) 
+    principal_direction = np.abs(79) 
     principal_direction_rad = np.deg2rad(principal_direction)
 
     # Calculate end points of the line
@@ -171,7 +186,13 @@ for file_name in files:
     denoised_image = np.fft.ifft2(f_ishift)
     denoised_image = np.abs(denoised_image)
     denoised_image_inv = 255-denoised_image
-    #plt.imshow(denoised_image_inv, cmap='gray')
+    plt.imshow(denoised_image_inv, cmap='gray')
+    plt.show()
+
+    #View Log Magnitude Spectrum of FFT
+    fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(denoised_image_inv)
+    plt.imshow(log_magnitude_spectrum)
+    plt.show()
 
 
 
