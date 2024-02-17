@@ -21,23 +21,20 @@ def histogram_of_gradients(image, visualize=True):
     blurred_image = cv2.GaussianBlur(image, (5, 5), 0)
     # Normalize the image
     normalized_image = np.uint8(255 * blurred_image / np.max(blurred_image))
-
     # Compute the gradient in x and y direction
-    grad_x = cv2.Sobel(normalized_image, cv2.CV_64F, 1, 0, ksize=5)
-    grad_y = cv2.Sobel(normalized_image, cv2.CV_64F, 0, 1, ksize=5)
+    grad_x = cv2.Sobel(normalized_image, cv2.CV_64F, 1, 0, ksize=3)
+    grad_y = cv2.Sobel(normalized_image, cv2.CV_64F, 0, 1, ksize=3)
 
     # Compute the gradient magnitude and orientation for each pixel
     magnitude = np.sqrt(grad_x**2 + grad_y**2)
     orientation = np.arctan2(grad_y, grad_x) * (180 / np.pi)
-    orientation = np.mod(orientation, 360)  
+    orientation = np.mod(orientation, 180)  
 
     # Construct a histogram of orientations, weighted by gradient magnitude
-    hist, bins = np.histogram(orientation, bins=360, range=(0, 360), weights=magnitude)
+    hist, bins = np.histogram(orientation, bins=360, range=(0, 180), weights=magnitude)
     hist[0] = 0
     hist[90] = 0
     hist[180] = 0
-    hist[270] = 0
-    hist[300:360] = 0
     
     if visualize:
         # Visualization
@@ -46,15 +43,22 @@ def histogram_of_gradients(image, visualize=True):
         plt.title('Histogram of Orientations Weighted by Gradient Magnitude')
         plt.xlabel('Orientation (Degrees)')
         plt.ylabel('Magnitude Weighted Count')
-        plt.xlim(0, 360)
+        plt.xlim(0, 180)
         plt.grid(axis='y', linestyle='--', alpha=0.7)
         plt.show()
 
     # Find the predominant orientation
-    predominant_orientation = np.argmax(hist)
+    max_index = np.argmax(hist)
+    predominant_orientation = (bins[max_index] + bins[max_index + 1])/2
     print(f"The predominant texture orientation is around {predominant_orientation} degrees.")
 
-    return predominant_orientation
+
+    #Find Probability Distribution
+    prob_dist = hist/np.sum(hist)
+    #print(f"Sum of probability distribution {np.sum(prob_dist)}")
+    print(np.max(prob_dist), np.min(prob_dist))
+
+    return predominant_orientation, prob_dist
 
 def window_function(image):
     M, N = np.shape(image)
@@ -122,9 +126,6 @@ def angular_filter(log_magnitude_spectrum, lower_bound, upper_bound):
 
     return filter_mask
 
-# List all files in the directory
-files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
-
 # Function to extract the translation factor from the file name
 def get_translation_factor(file_name):
     # Extract the part of the file name that contains the translation factor
@@ -135,65 +136,23 @@ def get_translation_factor(file_name):
     except ValueError:
         return 0.0  # Default value in case of any conversion error
 
-# Sort files by their translation factors
+
+
+files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_lohith')
 sorted_files = sorted(files, key=get_translation_factor)
 
-
-files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
 for file_name in sorted_files:
-    print(f"Translation Factor {get_translation_factor(file_name)}")
-    file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_will', file_name)
+    file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_lohith', file_name)
     image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
-    
+
     #Spatial FFT
     windowed_image = window_function(image)
     fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
     height, width = np.shape(log_magnitude_spectrum)
     log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
+    plt.imshow(log_magnitude_spectrum, cmap='gray')
+    plt.show()
     log_magnitude_spectrum = np.expand_dims(log_magnitude_spectrum, -1)
-
-    histogram_of_gradients(image, visualize=True)
-
-    print(np.shape(log_magnitude_spectrum))
-    center_y, center_x, _ = np.array(log_magnitude_spectrum.shape) // 2
-    line_length = np.min([center_x, center_y])  # Line length is half the smallest dimension of the image
-    print(line_length)
-
-    principal_direction = np.abs(79) 
-    principal_direction_rad = np.deg2rad(principal_direction)
-
-    # Calculate end points of the line
-    dx = line_length * np.cos(principal_direction_rad)
-    dy = line_length * np.sin(principal_direction_rad)
-    x1, y1 = center_x - dx, center_y - dy
-    x2, y2 = center_x + dx, center_y + dy
-
-    # Plot the FFT image
-    plt.imshow(image, cmap='gray')
-    plt.colorbar()
-    plt.plot([x1, x2], [y1, y2], 'r', linewidth=2)  # 'r' is the color red
-    plt.show()
-
-    filter_mask = angular_filter(log_magnitude_spectrum, 147, 192)
-
-    #Apply mask
-    fshift_masked = fft_shifted * filter_mask
-    log_magnitude_spectrum_filtered = np.log1p(np.abs(fshift_masked))
-    #plt.imshow(log_magnitude_spectrum_filtered, cmap='gray')
-
-    #Invert FFT
-    f_ishift = np.fft.ifftshift(fshift_masked)
-    denoised_image = np.fft.ifft2(f_ishift)
-    denoised_image = np.abs(denoised_image)
-    denoised_image_inv = 255-denoised_image
-    plt.imshow(denoised_image_inv, cmap='gray')
-    plt.show()
-
-    #View Log Magnitude Spectrum of FFT
-    fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(denoised_image_inv)
-    plt.imshow(log_magnitude_spectrum)
-    plt.show()
-
 
 
 

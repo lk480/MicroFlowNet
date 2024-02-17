@@ -4,17 +4,12 @@ from perlin_noise import PerlinNoise
 from perlin_numpy import generate_fractal_noise_2d
 import matplotlib.pyplot as plt
 from scipy.ndimage import rotate
-
-
-def generate_FFT(stiv_array):
-    fft_image = np.fft.fft2(stiv_array)
-    fft_shifted = np.fft.fftshift(fft_image)
-    magnitude_spectrum = np.abs(fft_shifted)
-    log_magnitude_spectrum = np.log1p(magnitude_spectrum)
-    return fft_shifted, magnitude_spectrum, log_magnitude_spectrum
+import os 
+import cv2
+from auto_texture import get_translation_factor, generate_FFT, window_function, histogram_of_gradients
+from tqdm import tqdm 
 
 def generate_directional_perlin(width, height, angle_degrees, scale, num_layers, octaves, persistence, lacunarity):
-    
     noise = PerlinNoise()
     angle_radians = np.radians(angle_degrees)
 
@@ -81,20 +76,40 @@ def crop_center(img, new_height, new_width):
     starty = height//2 - new_height//2    
     return img[starty:starty+new_height, startx:startx+new_width]
 
-directional_perlin_noise = generate_directional_perlin(width=128, height=128, angle_degrees=128, scale=1, num_layers=15, octaves=10, persistence= 0.1, lacunarity=2.5)
-base_noise = generate_base_image()
-rotated_base_noise = rotate(base_noise, 100, reshape=False)
-resized_base_noise = crop_center(rotated_base_noise, 128, 128)
-weighted_sum = 0.8 * directional_perlin_noise + 0.2 * resized_base_noise
-weighted_sum_normalized = (weighted_sum - np.min(weighted_sum)) / (np.max(weighted_sum) - np.min(weighted_sum))
 
-plt.imshow(resized_base_noise)
-plt.show()
-plt.imshow(weighted_sum_normalized, cmap='gray')
-plt.show()
-fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(weighted_sum_normalized)
-plt.imshow(log_magnitude_spectrum, cmap='gray')
-plt.show()
+orientations_list = list(np.arange(90, 180, 0.5))
+main_directory = '/Users/lohithkonathala/iib_project/synthetic_kymographs/'
+
+for orientation in orientations_list:
+    # Create a subdirectory for each orientation
+    print(f"Processing Angle of Orientation: {orientation}")
+    sub_directory = os.path.join(main_directory, f"Angle_{orientation}")
+    if not os.path.exists(sub_directory):
+        os.makedirs(sub_directory)
+
+    for i in tqdm(range(100), desc=f"Generating for angle {orientation}"):  
+        # Assuming these functions generate the images you mentioned
+        directional_perlin_noise = generate_directional_perlin(width=128, height=128, angle_degrees=orientation, scale=1, num_layers=15, octaves=10, persistence=0.1, lacunarity=2.5)
+        base_noise = generate_base_image()
+        rotated_base_noise = rotate(base_noise, orientation, reshape=False)
+        resized_base_noise = crop_center(rotated_base_noise, 128, 128)
+        weighted_sum = 0.9 * directional_perlin_noise + 0.1 * resized_base_noise
+        weighted_sum_normalized = (weighted_sum - np.min(weighted_sum)) / (np.max(weighted_sum) - np.min(weighted_sum))
+        weighted_sum_normalized_uint8 = (255 * weighted_sum_normalized).astype(np.uint8) 
+        
+        # Save weighted_sum_normalized image
+        normalized_filename = os.path.join(sub_directory, f"{orientation}_instance_{i+1}.png")
+        cv2.imwrite(normalized_filename, weighted_sum_normalized_uint8)
+
+        _, _, log_magnitude_spectrum = generate_FFT(weighted_sum_normalized)
+        log_magnitude_spectrum_uint8 = (255 * log_magnitude_spectrum / np.max(log_magnitude_spectrum)).astype(np.uint8)
+        fft_filename = os.path.join(sub_directory, f"log_magnitude_{orientation}_instance_{i+1}.png")
+        cv2.imwrite(fft_filename, log_magnitude_spectrum_uint8)
+
+        
+
+
+
 
 
 
