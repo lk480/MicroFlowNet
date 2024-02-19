@@ -77,7 +77,7 @@ def crop_center(img, new_height, new_width):
     return img[starty:starty+new_height, startx:startx+new_width]
 
 
-orientations_list = list(np.arange(90, 180, 0.5))
+orientations_list = list(np.arange(165, 180, 0.5))
 main_directory = '/Users/lohithkonathala/iib_project/synthetic_kymographs/'
 
 for orientation in orientations_list:

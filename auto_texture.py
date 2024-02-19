@@ -138,23 +138,5 @@ def get_translation_factor(file_name):
 
 
 
-files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_lohith')
-sorted_files = sorted(files, key=get_translation_factor)
-
-for file_name in sorted_files:
-    file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_lohith', file_name)
-    image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
-
-    #Spatial FFT
-    windowed_image = window_function(image)
-    fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
-    height, width = np.shape(log_magnitude_spectrum)
-    log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
-    plt.imshow(log_magnitude_spectrum, cmap='gray')
-    plt.show()
-    log_magnitude_spectrum = np.expand_dims(log_magnitude_spectrum, -1)
-
-
-
 
 

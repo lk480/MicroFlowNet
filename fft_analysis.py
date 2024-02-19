@@ -69,11 +69,35 @@ slope, intercept, r_value, p_value, std_err = linregress(x_filtered, y_filtered)
 # Use the slope and intercept to calculate the points of the regression line
 regression_line = slope * x_filtered + intercept
 
+#Use intial estimate of regression line to compute residuals
+res = list(y_filtered - regression_line)
+threshold = 0.75*np.std(res)
+
+data = list(zip(x_filtered, y_filtered))
+print(data)
+
+outlier_indices = []
+for residual in res:
+    if np.abs(residual) > threshold:
+        outlier_indices.append(res.index(residual))
+
+outlier_indices = set(outlier_indices)
+thresholded_filtered_data = [t for i, t in enumerate(data) if i not in outlier_indices]
+x_thresholded_filtered, y_thresholded_filtered = zip(*thresholded_filtered_data)
+x_thresholded_filtered = np.array(x_thresholded_filtered)
+y_thresholded_filtered = np.array(y_thresholded_filtered)
+
+
+slope, intercept, r_value, p_value, std_err = linregress(x_thresholded_filtered, y_thresholded_filtered)
+
+# Use the slope and intercept to calculate the points of the regression line
+regression_line = slope * x_thresholded_filtered + intercept
+
 # Plot the filtered data
-plt.scatter(x_filtered, y_filtered, color='blue')
+plt.scatter(x_thresholded_filtered, y_thresholded_filtered, color='blue')
 
 # Plot the regression line
-plt.plot(x_filtered, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
+plt.plot(x_thresholded_filtered, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
 
 # Add labels and legend
 plt.xlim(0, 128)
