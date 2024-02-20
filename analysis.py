@@ -18,7 +18,6 @@ segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
 
-
 #Perform Vessel Segmentation 
 hvi_image = load_hvi_image(hvi_file_path)
 model = SA_UNet()
@@ -60,11 +59,9 @@ for t_factor in np.linspace(-5, 5, 10):
     binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor)
 eng.quit()
 
-
 files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
 sorted_files = sorted(files, key=get_translation_factor)
 
-"""
 for file_name in sorted_files:
     print(f"Translation Factor {get_translation_factor(file_name)}")
     file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_will', file_name)
@@ -77,5 +74,5 @@ for file_name in sorted_files:
     log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
     log_magnitude_spectrum = np.expand_dims(log_magnitude_spectrum, -1)
 
-    histogram_of_gradients(image, visualize=True)
-"""
+    plt.imshow(log_magnitude_spectrum, cmap='gray')
+    plt.show()

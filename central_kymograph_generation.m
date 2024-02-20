@@ -116,7 +116,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     hold off;
 
     % Use uiwait to keep the figure open until manually closed
-    uiwait(gcf);
+    %uiwait(gcf);
 
     % finds and counts the connected components CC in the binary image
     CC = bwconncomp(discon_mini);
@@ -147,11 +147,11 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     figure;
     imshow(skeleton_rgb);
     title('Vessel Segment overlaid on Skeletonized Image');
-    uiwait(gcf);
+    %uiwait(gcf);
 
     %%%% STI SETTINGS %%%%%
     starting = 1;
-    N = 100;
+    N = 50;
     ending = N - starting + 1;
 
     index = sortedIndices(n);  % Get the index of the nth longest segment
@@ -198,10 +198,21 @@ scaledSTI = (STI - minSTI) / (maxSTI - minSTI);
 if isinteger(STI)
     scaledSTI = im2uint8(scaledSTI); % Convert to uint8 or use im2uint16 for uint16, etc.
 end
-imwrite(scaledSTI, '/Users/lohithkonathala/iib_project/central_axis_kymograph.png');
-disp(['Size of STI image: ', num2str(size(STI))]);
-figure;
-imshow(STI, []);
-uiwait(gcf);
+
+
+% Define your base directory
+baseDir = '/Users/lohithkonathala/iib_project/';
+
+% Define the folder where images will be saved
+imagesFolder = 'central_axis_kymographs';
+
+% Create the full path for the images folder if it doesn't exist
+imagesDir = fullfile(baseDir, imagesFolder);
+if ~exist(imagesDir, 'dir')
+    mkdir(imagesDir);
+end
+
+filename = sprintf('%s/central_axis_kymograph_%d.png', imagesDir, vessel_index);
+imwrite(scaledSTI, filename);
 
 end

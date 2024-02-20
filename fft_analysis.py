@@ -2,12 +2,36 @@ import cv2
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.stats import linregress
+from auto_texture import get_translation_factor, generate_FFT, window_function
+import matplotlib.image as mpimg
+import os
 
 # Load the image
-log_magnitude_image = cv2.imread('/Users/lohithkonathala/iib_project/synthetic_kymographs/Angle_120.5/log_magnitude_120.5_instance_1.png', 0)
-plt.imshow(log_magnitude_image, cmap='gray')
+files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
+sorted_files = sorted(files, key=get_translation_factor)
+file_name = sorted_files[0]
 
-_, thresh_image = cv2.threshold(log_magnitude_image, 70, 255, cv2.THRESH_BINARY)
+print(f"Translation Factor {get_translation_factor(file_name)}")
+file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_will', file_name)
+image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
+print(np.shape(image))
+
+#Spatial FFT
+windowed_image = window_function(image)
+fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
+height, width = np.shape(log_magnitude_spectrum)
+log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
+
+
+max_val = np.max(log_magnitude_spectrum)
+min_val = np.min(log_magnitude_spectrum)
+scaled_spectrum = ((log_magnitude_spectrum - min_val) / (max_val - min_val)) * 255
+scaled_spectrum = scaled_spectrum.astype(np.uint8)
+
+plt.imshow(scaled_spectrum)
+plt.show()
+
+_, thresh_image = cv2.threshold(scaled_spectrum, 110, 255, cv2.THRESH_BINARY)
 plt.imshow(thresh_image, cmap='gray')
 plt.show()
 
@@ -74,7 +98,6 @@ res = list(y_filtered - regression_line)
 threshold = 0.75*np.std(res)
 
 data = list(zip(x_filtered, y_filtered))
-print(data)
 
 outlier_indices = []
 for residual in res:
