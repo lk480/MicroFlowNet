@@ -213,5 +213,6 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
     plt.xlabel('Translation Factor')
     plt.ylabel('Velocity')
 
+    plt.savefig('velocity_profile.png', bbox_inches='tight')
     # Show the plot
     plt.show()

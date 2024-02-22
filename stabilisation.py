@@ -23,7 +23,7 @@ def stabilise_sequence(image_sequence_folder, img_frame_start,
     height, width = first_frame.shape[:2]
 
     # Define the codec and create VideoWriter object
-    video = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mpv4'), frame_rate, (width, height))
+    video = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'MJPG'), frame_rate, (width, height))
 
     # Perform the registration and write to video and files
     for idx, image_name in enumerate(tqdm(images)):
@@ -123,7 +123,7 @@ img_frame_end = 300
 frame_rate = 30
 
 #Apply Rigid Body Stabilisation to Raw HVI Sequence
-#stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
+stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
 
 #Crop Frames To Vessel of Interest
 cropped_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body_1'
@@ -133,16 +133,16 @@ y_topleft = 400
 width = 512
 height = 512
 
-#crop_frame(x_topleft, y_topleft, width, height, stabilised_frames_folder, cropped_frames_folder)
+crop_frame(x_topleft, y_topleft, width, height, stabilised_frames_folder, cropped_frames_folder)
 
 #Stabilise Cropped Frames
 image_sequence_folder = cropped_frames_folder
-video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body.mp4'
+video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_20x_left_rigid_body.mp4'
 stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body_2'
 img_frame_start = 0
 img_frame_end = 185
 
-#stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
+stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
 
 #Generate Maximum Intensity Image for Segmentation 
 folder_path = stabilised_frames_folder
