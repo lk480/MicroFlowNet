@@ -11,3 +11,4 @@ scikit-image
 perlin-noise 
 git+https://github.com/pvigier/perlin-numpy
 tqdm 
+pystackreg

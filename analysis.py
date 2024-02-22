@@ -11,9 +11,9 @@ from auto_texture import get_translation_factor, generate_FFT, window_function, 
 import matplotlib.image as mpimg
 
 #Specify Directories
-hvi_file_path = '/Users/lohithkonathala/Downloads/MII_start_0_end_9.pgm'
+hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine_crop/MII_start_0_end_9.pgm'
 segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation.png'
-image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine/'
+image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine_crop/'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
@@ -38,7 +38,7 @@ else:
 
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
-binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, 6)
+binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, 1)
 eng.quit()
 
 x_data, y_data, img_shape = get_pixel_data(segment_file_path)
