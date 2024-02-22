@@ -206,7 +206,7 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
 
     # Create the plot
     plt.figure()
-    plt.errorbar(translation_factors, median_velocities, yerr=asymmetric_error, fmt='o', capsize=5, capthick=2, ecolor='red', marker='s', markersize=5, linestyle='--', linewidth=2)
+    plt.errorbar(translation_factors, median_velocities, yerr=asymmetric_error, capsize=5, capthick=2, ecolor='red', marker='s', markersize=5, linestyle='--', linewidth=2)
 
     # Customize the plot
     plt.title('Velocity Profile with Upper and Lower Bounds (95% Confidence Interval)')
