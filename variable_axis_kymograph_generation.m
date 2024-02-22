@@ -36,7 +36,7 @@ function [binary_image] = variable_axis_kymograph_generation(translated_segment_
     %%%%% OVERLAY SKELETON %%%%
     figure;
     imshow(first_img_rgb);
-    uiwait(gcf);
+    %uiwait(gcf);
 
     %%%% CHECK ENDPOINTS %%%%
 
@@ -125,4 +125,4 @@ function [binary_image] = variable_axis_kymograph_generation(translated_segment_
     disp(['Size of STI image: ', num2str(size(STI))]);
     figure;
     imshow(STI, []);
-    uiwait(gcf);
+    %uiwait(gcf);

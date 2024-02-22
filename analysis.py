@@ -46,7 +46,7 @@ height, width = img_shape
 
 #Generate Profile Kymographs 
 eng = matlab.engine.start_matlab()
-for t_factor in np.linspace(-5, 5, 10):
+for t_factor in np.linspace(-6, 7, 20):
     #Fit Parametric Spline and Translate
     out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2)
     translated_points = translate_spline(out, out_dx_dy, translation_factor = t_factor)
@@ -64,7 +64,7 @@ sorted_files = sorted(files, key=get_translation_factor)
 
 for file_name in sorted_files:
     print(f"Translation Factor {get_translation_factor(file_name)}")
-    file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs_will', file_name)
+    file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs', file_name)
     image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
     
     #Spatial FFT
