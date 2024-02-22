@@ -6,7 +6,7 @@ from skimage import io
 import numpy as np
 
 def stabilise_sequence(image_sequence_folder, img_frame_start, 
-                       img_frame_end, frame_rate, video_filename, stabilised_frames_folder):
+                       img_frame_end, frame_rate, video_path, stabilised_frames_folder):
     
     if not os.path.exists(stabilised_frames_folder):
         os.makedirs(stabilised_frames_folder)
@@ -23,7 +23,7 @@ def stabilise_sequence(image_sequence_folder, img_frame_start,
     height, width = first_frame.shape[:2]
 
     # Define the codec and create VideoWriter object
-    video = cv2.VideoWriter(video_filename, cv2.VideoWriter_fourcc(*'MJPG'), frame_rate, (width, height))
+    video = cv2.VideoWriter(video_path, cv2.VideoWriter_fourcc(*'mpv4'), frame_rate, (width, height))
 
     # Perform the registration and write to video and files
     for idx, image_name in enumerate(tqdm(images)):
@@ -88,7 +88,7 @@ def mii_generator(folder_path, image_end_frame, image_start_frame, img_width, im
 
 
     for i in range(image_start_frame,image_end_frame+1):
-        file_path = folder_path + f'{i:05d}.pgm'
+        file_path = os.path.join(folder_path, f"frame_{i:04d}.pgm")
         print(file_path)
         frame = cv2.imread(file_path)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -108,5 +108,46 @@ def mii_generator(folder_path, image_end_frame, image_start_frame, img_width, im
     # print(output_uint8)
 
     output_file_name = 'MII_start_'+str(image_start_frame)+'_end_'+str(image_end_frame)+'.pgm'
-    output_path = folder_path + output_file_name
+    output_path = os.path.join(folder_path, output_file_name)
     cv2.imwrite(output_path, output_uint8)
+
+
+#Specify Directories
+image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/raw_hvi_sequences/202311_Thomas2_20x_LeftHalf'
+video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/thomas_20x_left_rigid_body.mp4'
+stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/thomas_20x_left_rigid_body'
+
+#Specify Sequence Properties
+img_frame_start = 115
+img_frame_end = 300
+frame_rate = 30
+
+#Apply Rigid Body Stabilisation to Raw HVI Sequence
+#stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
+
+#Crop Frames To Vessel of Interest
+cropped_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body_1'
+#Parameters
+x_topleft = 300
+y_topleft = 400
+width = 512
+height = 512
+
+#crop_frame(x_topleft, y_topleft, width, height, stabilised_frames_folder, cropped_frames_folder)
+
+#Stabilise Cropped Frames
+image_sequence_folder = cropped_frames_folder
+video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body.mp4'
+stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body_2'
+img_frame_start = 0
+img_frame_end = 185
+
+#stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
+
+#Generate Maximum Intensity Image for Segmentation 
+folder_path = stabilised_frames_folder
+image_start_frame = 0
+image_end_frame = 9
+img_width = width
+img_height = height
+mii_generator(folder_path, image_end_frame, image_start_frame, img_width, img_height)
