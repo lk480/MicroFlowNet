@@ -13,6 +13,10 @@ files = os.listdir('/Users/lohithkonathala/iib_project/kymographs')
 sorted_files = sorted(files, key=get_translation_factor)
 print(len(sorted_files))
 
+#Set  output booleans
+visualise = False
+verbose = False
+
 #Intialise Lists
 upper_bound_velocities = []
 median_velocities = []
@@ -63,8 +67,9 @@ for file_name in sorted_files:
     filtered_points_x = points_sorted[points_sorted[:, 0] != center_x]
     filtered_points = filtered_points_x[filtered_points_x[:, 1] != center_y]
 
-    #plt.scatter(filtered_points[:, 0], filtered_points[:, 1], c='red', label='Filtered Points')
-    #plt.show()
+    if visualise:
+        plt.scatter(filtered_points[:, 0], filtered_points[:, 1], c='red', label='Filtered Points')
+        plt.show()
 
     x_filtered = np.array(filtered_points[:, 0])
     y_filtered = np.array(filtered_points[:, 1])
@@ -72,21 +77,20 @@ for file_name in sorted_files:
     thresh1 = 50  # Set your specific lower threshold value for y
     thresh2 = 65  # Set your specific upper threshold value for y
 
-    """
-    # Plot horizontal lines for thresh1 and thresh2
-    plt.axhline(y=thresh1, color='blue', linestyle='--', label=f'Thresh1 = {thresh1}')
-    plt.axhline(y=thresh2, color='green', linestyle='--', label=f'Thresh2 = {thresh2}')
+    if visualise:
+        # Plot horizontal lines for thresh1 and thresh2
+        plt.axhline(y=thresh1, color='blue', linestyle='--', label=f'Thresh1 = {thresh1}')
+        plt.axhline(y=thresh2, color='green', linestyle='--', label=f'Thresh2 = {thresh2}')
 
-    plt.scatter(x_filtered, y_filtered, color='blue')
+        plt.scatter(x_filtered, y_filtered, color='blue')
 
-    # Adding labels, title, and legend
-    plt.xlabel('X Coordinate')
-    plt.ylabel('Y Coordinate')
-    plt.title('Filtered Data with Threshold Lines')
-    plt.legend()
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.show()
-    """
+        # Adding labels, title, and legend
+        plt.xlabel('X Coordinate')
+        plt.ylabel('Y Coordinate')
+        plt.title('Filtered Data with Threshold Lines')
+        plt.legend()
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.show()
 
     mask = (filtered_points[:, 1] > thresh1) & (filtered_points[:, 1] < thresh2)
 
@@ -104,14 +108,10 @@ for file_name in sorted_files:
     # Use the slope and intercept to calculate the points of the regression line
     regression_line = slope * x_filtered_within_bounds + intercept
 
-    """
-    plt.scatter(x_filtered_within_bounds, y_filtered_within_bounds, color='blue')
-    plt.plot(x_filtered_within_bounds, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
-    plt.show()
-    """
-
-    #print(f"Intial Estimate of Main orientation of texture is: {np.arctan(np.abs(slope)) * (180/np.pi) + 90}")
-
+    if visualise:
+        plt.scatter(x_filtered_within_bounds, y_filtered_within_bounds, color='blue')
+        plt.plot(x_filtered_within_bounds, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
+        plt.show()
 
     #Use intial estimate of regression line to compute residuals
     res = list(y_filtered_within_bounds - regression_line)
@@ -148,30 +148,26 @@ for file_name in sorted_files:
     max_orientation_estimate = np.arctan(np.abs(slope_conf_interval[0])) * (180/np.pi) + 90
     min_orientation_estimate = np.arctan(np.abs(slope_conf_interval[1])) * (180/np.pi) + 90
 
-    # Print the results
-    #print(f"Final R^2 Value: {np.abs(r_value)} and Std Error: {std_err}")
-    #print(f"95% Confidence Interval for Slope: {slope_conf_interval}")
-    #print(f"Max Estimate of Main orientation of texture is: {max_orientation_estimate}")
-    #print(f"Min Estimate of Main orientation of texture is: {min_orientation_estimate}")
+    if verbose:
+        # Print the results
+        print(f"Final R^2 Value: {np.abs(r_value)} and Std Error: {std_err}")
+        print(f"95% Confidence Interval for Slope: {slope_conf_interval}")
+        print(f"Max Estimate of Main orientation of texture is: {max_orientation_estimate}")
+        print(f"Min Estimate of Main orientation of texture is: {min_orientation_estimate}")
 
     # Use the slope and intercept to calculate the points of the regression line
     regression_line = slope * x_thresholded_filtered + intercept
 
-    # Plot the filtered data
-    #plt.scatter(x_thresholded_filtered, y_thresholded_filtered, color='blue')
-
-    # Plot the regression line
-    """
-    plt.plot(x_thresholded_filtered, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
-
-    plt.xlabel('X-Value')
-    plt.ylabel('Y-Value')
-    plt.gca().set_aspect('equal', adjustable='box')
-    plt.legend()
-
-    # Show the plot
-    plt.show()
-    """
+    if visualise:
+        # Plot the filtered data
+        plt.scatter(x_thresholded_filtered, y_thresholded_filtered, color='blue')
+        plt.plot(x_thresholded_filtered, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
+        plt.xlabel('X-Value')
+        plt.ylabel('Y-Value')
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.legend()
+        # Show the plot
+        plt.show()
 
     orientation_estimate = np.arctan(np.abs(slope)) * (180/np.pi) + 90
     # Print the slope of the line

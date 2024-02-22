@@ -7,8 +7,7 @@ import cv2
 from PIL import Image
 from segmentation_model import load_hvi_image, SA_UNet
 from translation import get_pixel_data, param_spline, translate_spline, draw_points
-from auto_texture import get_translation_factor, generate_FFT, window_function, histogram_of_gradients
-import matplotlib.image as mpimg
+from velocity_estimation import generate_velocity_profile
 
 #Specify Directories
 hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine_crop/MII_start_0_end_9.pgm'
@@ -59,20 +58,8 @@ for t_factor in np.linspace(-6, 7, 20):
     binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor)
 eng.quit()
 
-files = os.listdir('/Users/lohithkonathala/iib_project/kymographs_will')
-sorted_files = sorted(files, key=get_translation_factor)
 
-for file_name in sorted_files:
-    print(f"Translation Factor {get_translation_factor(file_name)}")
-    file_path = os.path.join('/Users/lohithkonathala/iib_project/kymographs', file_name)
-    image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
-    
-    #Spatial FFT
-    windowed_image = window_function(image)
-    fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
-    height, width = np.shape(log_magnitude_spectrum)
-    log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
-    log_magnitude_spectrum = np.expand_dims(log_magnitude_spectrum, -1)
+kymograph_directory = '/Users/lohithkonathala/iib_project/kymographs'
 
-    plt.imshow(log_magnitude_spectrum, cmap='gray')
-    plt.show()
+#Generate Velocity Profile
+generate_velocity_profile(kymograph_directory)
