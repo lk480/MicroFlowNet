@@ -58,7 +58,6 @@ for t_factor in np.linspace(-6, 7, 20):
     binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor)
 eng.quit()
 
-
 kymograph_directory = '/Users/lohithkonathala/iib_project/kymographs'
 
 #Generate Velocity Profile

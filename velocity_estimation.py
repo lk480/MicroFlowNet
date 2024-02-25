@@ -18,7 +18,7 @@ def get_vessel_index(file_name):
     return int(index_part)
 
 
-def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
+def generate_velocity_profile(kymograph_dir, visualise=True, verbose=False):
     # Load the image
     files = os.listdir(kymograph_dir)
     sorted_files = sorted(files, key=get_translation_factor)

@@ -113,41 +113,25 @@ def mii_generator(folder_path, image_end_frame, image_start_frame, img_width, im
 
 
 #Specify Directories
-image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/raw_hvi_sequences/202311_Thomas2_20x_LeftHalf'
-video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/thomas_20x_left_rigid_body.mp4'
-stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/thomas_20x_left_rigid_body'
+image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_cropped'
+video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_rigid_body_cropped.mp4'
+stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_rigid_body_cropped'
 
 #Specify Sequence Properties
-img_frame_start = 115
-img_frame_end = 300
+img_frame_start = 0
+img_frame_end = 50
 frame_rate = 30
 
-#Apply Rigid Body Stabilisation to Raw HVI Sequence
-stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
-
-#Crop Frames To Vessel of Interest
-cropped_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body_1'
-#Parameters
-x_topleft = 300
-y_topleft = 400
+x_topleft = 950
+y_topleft = 300
 width = 512
 height = 512
 
-crop_frame(x_topleft, y_topleft, width, height, stabilised_frames_folder, cropped_frames_folder)
+input_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_rigid_body'
+output_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_cropped'
 
-#Stabilise Cropped Frames
-image_sequence_folder = cropped_frames_folder
-video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_20x_left_rigid_body.mp4'
-stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/cropped_thomas_20x_left_rigid_body_2'
-img_frame_start = 0
-img_frame_end = 185
+#Crop Frames Beforehand
+crop_frame(x_topleft, y_topleft, width, height, input_folder, output_folder)
 
+#Apply Rigid Body Stabilisation to Raw HVI Sequence
 stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
-
-#Generate Maximum Intensity Image for Segmentation 
-folder_path = stabilised_frames_folder
-image_start_frame = 0
-image_end_frame = 9
-img_width = width
-img_height = height
-mii_generator(folder_path, image_end_frame, image_start_frame, img_width, img_height)
