@@ -10,14 +10,14 @@ from translation import get_pixel_data, param_spline, translate_spline, draw_poi
 from velocity_estimation import generate_velocity_profile
 
 #Specify Directories
-hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/12x_final/MII_start_0_end_9.pgm'
+hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final/MII_start_0_end_9.pgm'
 segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation.png'
-image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/12x_final'
+image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
 
-#Perform Vessel Segmentation 
+#Perform Vessel Segmentation
 hvi_image = load_hvi_image(hvi_file_path)
 model = SA_UNet()
 model.load_weights(weight_file_path)
@@ -34,8 +34,7 @@ else:
     _, predicted_segmentation_thresholded = cv2.threshold(predicted_segmentation, 100, 255, cv2.THRESH_BINARY)
     cv2.imwrite(segmentation_file_path, predicted_segmentation)
 
-
-#Generate Central Axis Kymograph 
+#Generate Central Axis Kymograph
 eng = matlab.engine.start_matlab()
 binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, 1)
 eng.quit()
@@ -45,8 +44,8 @@ height, width = img_shape
 
 #Generate Profile Kymographs 
 eng = matlab.engine.start_matlab()
-for t_factor in np.linspace(-6, 7, 20):
-    #Fit Parametric Spline and Translate
+for t_factor in np.linspace(-7, 7, 20):
+    # Fit Parametric Spline and Translate
     out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2)
     translated_points = translate_spline(out, out_dx_dy, translation_factor = t_factor)
     image = np.zeros((height, width, 3), dtype=np.uint8)
@@ -60,5 +59,5 @@ eng.quit()
 
 kymograph_directory = '/Users/lohithkonathala/iib_project/kymographs'
 
-#Generate Velocity Profile
+# Generate Velocity Profile
 generate_velocity_profile(kymograph_directory)

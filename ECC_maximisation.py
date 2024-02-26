@@ -93,12 +93,12 @@ def mii_generator(folder_path, image_end_frame, image_start_frame= 0, img_width 
 def create_video_from_images(image_folder, output_video_file, fps=30, frame_size=None):
     """
     Create a video from a sequence of images.
-
     :param image_folder: Path to the folder containing the images.
     :param output_video_file: Path where the output video will be saved.
     :param fps: Frames per second in the output video.
     :param frame_size: The size of each frame (width, height). If None, the size of the first image is used.
     """
+    
     # Get all image files from the folder, assuming they are sorted in the correct order
     image_files = [f for f in sorted(os.listdir(image_folder)) if f.endswith(('.pgm'))]
     
@@ -125,7 +125,7 @@ def create_video_from_images(image_folder, output_video_file, fps=30, frame_size
 
 #Image Registration using ECC Algorithm
 #Read video
-path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_affine_cropped.mp4'
+path = '/Users/lohithkonathala/Documents/IIB Project/12x_affine.mp4'
 cap = cv2.VideoCapture(path)
 
 #Get reference frame
@@ -135,7 +135,7 @@ if not ret:
 ref_gray = cv2.cvtColor(ref_frame, cv2.COLOR_BGR2GRAY)
 cap.set(cv2.CAP_PROP_POS_FRAMES,1)
 
-cv2.imwrite('/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_affine_cropped_ecc/frame_0000.pgm', ref_gray)
+cv2.imwrite('/Users/lohithkonathala/Documents/IIB Project/12x_affine_ecc/frame_0000.pgm', ref_gray)
 
 #Define video output spec
 height = ref_frame.shape[0]
@@ -160,7 +160,7 @@ for i in range(0, 50): # Specify the registration range here.
         break
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     try:
-        reference, registered = register_img(ref_gray, gray,cv2.MOTION_AFFINE) # change registration mode here
+        reference, registered = register_img(ref_gray, gray, cv2.MOTION_EUCLIDEAN) # change registration mode here
 
         error, mse_ECC = find_diff(reference, registered)
         error, mse_original = find_diff(reference, gray)
@@ -171,9 +171,9 @@ for i in range(0, 50): # Specify the registration range here.
         registered = gray
         print(f"image number {i:04d} can't be registered, using original instead")
 
-    cv2.imwrite(f'/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_affine_cropped_ecc/frame_{i:04d}.pgm', registered)
+    cv2.imwrite(f'/Users/lohithkonathala/Documents/IIB Project/12x_affine_ecc/frame_{i:04d}.pgm', registered)
 
 cap.release()
 cv2.destroyAllWindows()
 
-mii_generator('/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_affine_cropped_ecc/', 9, image_start_frame= 0, img_width = 512, img_height = 512)
+mii_generator('/Users/lohithkonathala/Documents/IIB Project/12x_affine_ecc/', 9, image_start_frame= 0, img_width = 1360, img_height = 1024)
