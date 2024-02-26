@@ -61,13 +61,13 @@ def find_diff(img1,img2):
     return error, mse # return the diff picture and mse value
 
 
-def mii_generator(folder_path, image_end_frame, image_start_frame= 0, img_width = 1944, img_height = 1472):
+def mii_generator(folder_path, image_end_frame, image_start_frame= 0, img_width = 512, img_height = 512):
     image_array = []
     output = np.zeros((img_height,img_width))
 
 
     for i in range(image_start_frame,image_end_frame+1):
-        file_path = folder_path + f'{i:05d}.pgm'
+        file_path = folder_path + f'frame_{i:04d}.pgm'
         print(file_path)
         frame = cv2.imread(file_path)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -125,7 +125,7 @@ def create_video_from_images(image_folder, output_video_file, fps=30, frame_size
 
 #Image Registration using ECC Algorithm
 #Read video
-path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_rigid_body_cropped.mp4'
+path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_affine_cropped.mp4'
 cap = cv2.VideoCapture(path)
 
 #Get reference frame
@@ -135,7 +135,7 @@ if not ret:
 ref_gray = cv2.cvtColor(ref_frame, cv2.COLOR_BGR2GRAY)
 cap.set(cv2.CAP_PROP_POS_FRAMES,1)
 
-cv2.imwrite('/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_rigid_body_cropped_ecc/00000.pgm', ref_gray)
+cv2.imwrite('/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_affine_cropped_ecc/frame_0000.pgm', ref_gray)
 
 #Define video output spec
 height = ref_frame.shape[0]
@@ -152,15 +152,15 @@ print(total_frame)
 
 filler_img = np.zeros((size[1], size[0]), np.uint8)
 
-for i in range(100, 300): # Specify the registration range here.
+for i in range(0, 50): # Specify the registration range here.
     ret, frame = cap.read()
-    print(f'currently processing image {i:05d}')
+    print(f'currently processing image {i:04d}')
     if not ret:
         print("Can't receive frame. Exiting...")
         break
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     try:
-        reference, registered = register_img(ref_gray, gray,cv2.MOTION_EUCLIDEAN) # change registration mode here
+        reference, registered = register_img(ref_gray, gray,cv2.MOTION_AFFINE) # change registration mode here
 
         error, mse_ECC = find_diff(reference, registered)
         error, mse_original = find_diff(reference, gray)
@@ -169,14 +169,11 @@ for i in range(100, 300): # Specify the registration range here.
     
     except:
         registered = gray
-        print(f"image number {i:05d} can't be registered, using original instead")
+        print(f"image number {i:04d} can't be registered, using original instead")
 
-    cv2.imwrite(f'/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_rigid_body_cropped_ecc/{i:05d}.pgm', registered)
-
+    cv2.imwrite(f'/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_affine_cropped_ecc/frame_{i:04d}.pgm', registered)
 
 cap.release()
 cv2.destroyAllWindows()
 
-image_folder = '/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_rigid_body_cropped_ecc'
-output_video_path = '/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_rigid_body_cropped_ecc.mp4'
-create_video_from_images(image_folder, output_video_path)
+mii_generator('/Users/lohithkonathala/Documents/IIB Project/ECC_out/12x_affine_cropped_ecc/', 9, image_start_frame= 0, img_width = 512, img_height = 512)

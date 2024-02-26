@@ -6,7 +6,6 @@ from scipy import stats
 from auto_texture import get_translation_factor, generate_FFT, window_function
 import matplotlib.image as mpimg
 import os
-import sys
 
 # Load the image
 files = os.listdir('/Users/lohithkonathala/iib_project/kymographs')
@@ -40,7 +39,6 @@ for file_name in sorted_files:
 
     height, width = np.shape(log_magnitude_spectrum)
 
-
     max_val = np.max(log_magnitude_spectrum)
     min_val = np.min(log_magnitude_spectrum)
     scaled_spectrum = ((log_magnitude_spectrum - min_val) / (max_val - min_val)) * 255
@@ -54,7 +52,7 @@ for file_name in sorted_files:
     # Combine x and y into a single array and sort by x
     points = np.column_stack((x, y))
 
-    if len(points) < 100:
+    if len(points) < 80:
         print('Segment Outside the Vessel')
         print("Velocity Estimate is 0")
         upper_bound_velocities.append(0)
@@ -193,13 +191,14 @@ for file_name in sorted_files:
 
 #Visualise Profile
 errors = [[value - lower, upper - value] for lower, value, upper in zip(lower_bound_velocities, median_velocities, upper_bound_velocities)]
-lower_errors = [value - lower for lower, value in zip(lower_bound_velocities, median_velocities)]
-upper_errors = [upper - value for upper, value in zip(upper_bound_velocities, median_velocities)]
+lower_errors = [np.abs(value - lower) for lower, value in zip(lower_bound_velocities, median_velocities)]
+upper_errors = [np.abs(upper - value) for upper, value in zip(upper_bound_velocities, median_velocities)]
 asymmetric_error = [lower_errors, upper_errors]
+
 
 # Create the plot
 plt.figure()
-plt.errorbar(translation_factors, median_velocities, yerr=asymmetric_error, fmt='o', capsize=5, capthick=2, ecolor='red', marker='s', markersize=5, linestyle='--', linewidth=2)
+plt.errorbar(translation_factors, median_velocities, yerr=asymmetric_error,  capsize=5, capthick=2, ecolor='red', marker='s', markersize=5, linestyle='--', linewidth=2)
 
 # Customize the plot
 plt.title('Velocity Profile with Upper and Lower Bounds (95% Confidence Interval)')

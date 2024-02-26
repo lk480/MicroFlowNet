@@ -17,7 +17,7 @@ function [binary_image] = variable_axis_kymograph_generation(translated_segment_
     disp(size(bw_skel_clean));
 
     % Read the first image in the sequence (for STI)
-    first_img = imread(sprintf('%s/00000.pgm', image_sequence_dir));
+    first_img = imread(sprintf('%s/frame_0000.pgm', image_sequence_dir));
 
     % Ensure the first image is in grayscale for visualization
     if size(first_img, 3) == 3
@@ -67,14 +67,14 @@ function [binary_image] = variable_axis_kymograph_generation(translated_segment_
 
     %%%% STI SETTINGS %%%%%
     starting = 1;
-    N = 50;
+    N = 48;
     ending = N - starting + 1;
 
     % place holder empty image
     STI = zeros(length(ordered_indices) , N);
 
     for ii = starting:ending
-        img_name = sprintf('%s%05d.pgm', image_sequence_dir, ii);
+        img_name = sprintf('%s/frame_%04d.pgm', image_sequence_dir, ii);
         
         A = imread(img_name);
 

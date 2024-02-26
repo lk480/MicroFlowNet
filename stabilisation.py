@@ -5,18 +5,31 @@ from pystackreg import StackReg
 from skimage import io
 import numpy as np
 
-def stabilise_sequence(image_sequence_folder, img_frame_start, 
-                       img_frame_end, frame_rate, video_path, stabilised_frames_folder):
-    
+def stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, 
+                       frame_rate, video_path, stabilised_frames_folder, 
+                       transformation_mode=StackReg.AFFINE):
+    """
+    Stabilizes a sequence of images using the specified transformation mode.
+
+    Args:
+        image_sequence_folder (str): Folder containing the image sequence.
+        img_frame_start (int): Index of the first frame to include.
+        img_frame_end (int): Index of the last frame to include.
+        frame_rate (float): Frame rate for the output video.
+        video_path (str): Path to save the output video.
+        stabilised_frames_folder (str): Folder to save the stabilized frames.
+        transformation_mode (int): Transformation mode for StackReg. Default is StackReg.AFFINE.
+    """
     if not os.path.exists(stabilised_frames_folder):
         os.makedirs(stabilised_frames_folder)
 
     # Sort and filter images based on provided frame indices
     images = sorted(os.listdir(image_sequence_folder))
+    images = [img for img in images if img.lower().endswith('.pgm') and not img.startswith('.')]
     images = images[img_frame_start:img_frame_end]
 
-    # Create a StackReg object for affine transformation
-    sr = StackReg(StackReg.RIGID_BODY)
+    # Create a StackReg object for the specified transformation
+    sr = StackReg(transformation_mode)
 
     # Load the first image to set video properties
     first_frame = io.imread(os.path.join(image_sequence_folder, images[0]))
@@ -86,7 +99,6 @@ def mii_generator(folder_path, image_end_frame, image_start_frame, img_width, im
     image_array = []
     output = np.zeros((img_height,img_width))
 
-
     for i in range(image_start_frame,image_end_frame+1):
         file_path = os.path.join(folder_path, f"frame_{i:04d}.pgm")
         print(file_path)
@@ -103,9 +115,7 @@ def mii_generator(folder_path, image_end_frame, image_start_frame, img_width, im
         output = np.fmin(output, image_array[i])
 
     output = output.astype(int)
-    # print(output.shape)
     output_uint8 = output.astype(np.uint8)
-    # print(output_uint8)
 
     output_file_name = 'MII_start_'+str(image_start_frame)+'_end_'+str(image_end_frame)+'.pgm'
     output_path = os.path.join(folder_path, output_file_name)
@@ -113,25 +123,41 @@ def mii_generator(folder_path, image_end_frame, image_start_frame, img_width, im
 
 
 #Specify Directories
-image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_cropped'
-video_path = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_rigid_body_cropped.mp4'
-stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_rigid_body_cropped'
+image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/raw_hvi_sequences.noysnc/V4HYP1001LT0-220'
+video_path = '/Users/lohithkonathala/Documents/IIB Project/12x_affine.mp4'
+stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_affine'
+
+#Specify Sequence Properties
+img_frame_start = 45
+img_frame_end = 95
+frame_rate = 30
+
+#Apply Affine Stabilisation to Test Sequence 
+stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder, transformation_mode=StackReg.AFFINE)
+
+#Crop Image
+x_topleft = 800
+y_topleft = 300
+width = 512
+height = 512
+
+input_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_affine'
+output_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_affine_cropped'
+
+crop_frame(x_topleft, y_topleft, width, height, input_folder, output_folder)
+
+#Apply Rigid Body Stabilisation to Cropped Sequence
+image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/12x_affine_cropped'
+video_path = '/Users/lohithkonathala/Documents/IIB Project/12x_final.mp4'
+stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_final'
 
 #Specify Sequence Properties
 img_frame_start = 0
 img_frame_end = 50
 frame_rate = 30
 
-x_topleft = 950
-y_topleft = 300
-width = 512
-height = 512
+stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder, transformation_mode=StackReg.RIGID_BODY)
 
-input_folder = '/Users/lohithkonathala/Documents/IIB Project/rigid_body_registered_sequences/test_12x/12x_rigid_body'
-output_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_cropped'
-
-#Crop Frames Beforehand
-crop_frame(x_topleft, y_topleft, width, height, input_folder, output_folder)
-
-#Apply Rigid Body Stabilisation to Raw HVI Sequence
-stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder)
+#Generate MII 
+folder_path = '/Users/lohithkonathala/Documents/IIB Project/12x_final'
+mii_generator(folder_path, image_end_frame=9, image_start_frame=0, img_width=512, img_height=512)

@@ -32,7 +32,6 @@ def kymograph_CNN(input_size=(128,128,1), drop_rate=0.2, kernel_init='he_normal'
     
     model = Model(inputs=[inputs], outputs=[out_layer])
     model.compile(optimizer=Adam(learning_rate=0.01), loss='categorical_crossentropy', metrics=['categorical_accuracy'])
-
     return model 
 
 def load_fft_paths(synthetic_kymograph_dir):
@@ -64,7 +63,6 @@ def load_data(file_path, size=(128,128)):
     image = tf.cast(image, tf.float32) / 255.0
     return image
 
-
 def create_train_test_val(synthetic_kymograph_dir):
     fft_files = load_fft_paths(synthetic_kymograph_dir)
     #Create training, test and validation datasets
@@ -92,7 +90,6 @@ def one_hot_encoding(fft_files):
     label_indices = [label_to_index[label] for label in labels_asc]
     one_hot_labels = tf.one_hot(indices=label_indices, depth=180)
     return one_hot_labels
-
 
 train_file_paths, val_file_paths, test_file_paths = create_train_test_val('/Users/lohithkonathala/iib_project/synthetic_kymographs')
 
@@ -124,39 +121,3 @@ model.fit(
     epochs=50,  # Number of epochs to train for
     validation_data=validation_data  # Your validation data
 )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

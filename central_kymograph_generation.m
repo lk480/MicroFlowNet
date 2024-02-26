@@ -21,7 +21,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     imwrite(bw_skel_clean, '/Users/lohithkonathala/iib_project/skeletonized_image.png');
 
     % Read the first image in the sequence (for STI)
-    first_img = imread(sprintf('%s/00000.pgm', image_sequence_dir));
+    first_img = imread(sprintf('%s/frame_0000.pgm', image_sequence_dir));
 
     % Ensure the first image is in grayscale for visualization
     if size(first_img, 3) == 3
@@ -50,7 +50,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     discon = bw_skel_clean & ~branch_points_dilate;
 
     % Read the first image in the sequence
-    first_img = imread(sprintf('%s/00000.pgm', image_sequence_dir));
+    first_img = imread(sprintf('%s/frame_0000.pgm', image_sequence_dir));
 
     % Ensure the first image is in grayscale for visualization
     if size(first_img, 3) == 3
@@ -116,7 +116,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     hold off;
 
     % Use uiwait to keep the figure open until manually closed
-    %uiwait(gcf);
+    uiwait(gcf);
 
     % finds and counts the connected components CC in the binary image
     CC = bwconncomp(discon_mini);
@@ -151,7 +151,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
 
     %%%% STI SETTINGS %%%%%
     starting = 1;
-    N = 50;
+    N = 48;
     ending = N - starting + 1;
 
     index = sortedIndices(n);  % Get the index of the nth longest segment
@@ -164,7 +164,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
 
     for ii = starting:ending
         % write the img_name in format of pictures in target repository
-        img_name = sprintf('%s%05d.pgm', image_sequence_dir, ii);
+        img_name = sprintf('%s/frame_%04d.pgm', image_sequence_dir, ii);
 
         A = imread(img_name);
 

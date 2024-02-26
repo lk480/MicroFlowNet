@@ -18,7 +18,7 @@ def get_vessel_index(file_name):
     return int(index_part)
 
 
-def generate_velocity_profile(kymograph_dir, visualise=True, verbose=False):
+def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
     # Load the image
     files = os.listdir(kymograph_dir)
     sorted_files = sorted(files, key=get_translation_factor)
@@ -61,7 +61,7 @@ def generate_velocity_profile(kymograph_dir, visualise=True, verbose=False):
         # Combine x and y into a single array and sort by x
         points = np.column_stack((x, y))
 
-        if len(points) < 100:
+        if len(points) < 80:
             print('Segment Outside the Vessel')
             print("Velocity Estimate is 0")
             upper_bound_velocities.append(0)
@@ -202,7 +202,7 @@ def generate_velocity_profile(kymograph_dir, visualise=True, verbose=False):
     errors = [[value - lower, upper - value] for lower, value, upper in zip(lower_bound_velocities, median_velocities, upper_bound_velocities)]
     lower_errors = [value - lower for lower, value in zip(lower_bound_velocities, median_velocities)]
     upper_errors = [upper - value for upper, value in zip(upper_bound_velocities, median_velocities)]
-    asymmetric_error = [lower_errors, upper_errors]
+    asymmetric_error = np.array([lower_errors, upper_errors])
 
     # Create the plot
     plt.figure()

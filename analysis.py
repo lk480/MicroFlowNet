@@ -10,9 +10,9 @@ from translation import get_pixel_data, param_spline, translate_spline, draw_poi
 from velocity_estimation import generate_velocity_profile
 
 #Specify Directories
-hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine_crop/MII_start_0_end_9.pgm'
+hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/12x_final/MII_start_0_end_9.pgm'
 segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation.png'
-image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine_crop/'
+image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/12x_final'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
