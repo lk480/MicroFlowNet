@@ -72,11 +72,11 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     first_img_rgb = repmat(first_img, 1, 1, 3);
 
     % Parameters
-    min_length = 100; % Minimum size threshold
+    min_length = 80; % Minimum size threshold
 
     % Remove objects smaller than the minimum size
     discon_mini = bwareaopen(discon, min_length, 8);
-    labeled = bwlabel(discon_mini,8);
+    labeled = bwlabel(discon_mini, 8);
 
 
     %%%% ISOLATED SEGMENTS OVERLAY (ANNOTATED) %%%%
@@ -116,7 +116,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     hold off;
 
     % Use uiwait to keep the figure open until manually closed
-    uiwait(gcf);
+    %uiwait(gcf);
 
     % finds and counts the connected components CC in the binary image
     CC = bwconncomp(discon_mini);
@@ -214,5 +214,6 @@ end
 
 filename = sprintf('%s/central_axis_kymograph_%d.png', imagesDir, vessel_index);
 imwrite(scaledSTI, filename);
+imshow(scaledSTI);
 
 end

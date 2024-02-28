@@ -6,15 +6,14 @@ import matlab.engine
 import cv2
 from PIL import Image
 from segmentation_model import load_hvi_image, SA_UNet
-from auto_texture import generate_FFT, window_function, histogram_of_gradients
 import matplotlib.image as mpimg
-from velocity_estimation import est_central_velocity, get_vessel_index
+from velocity_estimation import estimate_axial_velocity
 
 
 #Specify Directories
-hvi_file_path = '/Users/lohithkonathala/Downloads/MII_start_0_end_9.pgm'
+hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body/MII_start_0_end_9.pgm'
 segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation.png'
-image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/affine_registered_sequences/willeye_affine/'
+image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
@@ -39,23 +38,20 @@ else:
 
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
-for vessel_index in range(1,5):
+vessels_of_interest = [1, 2, 4, 5, 6, 9, 50, 54, 61]
+for vessel_index in vessels_of_interest:
     binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, vessel_index)
 eng.quit()
 
-files = os.listdir('/Users/lohithkonathala/iib_project/central_axis_kymographs')
-sorted_files = sorted(files, key=get_vessel_index)
-axial_flow_velocities = []
+central_kymo_dir = '/Users/lohithkonathala/iib_project/central_axis_kymographs'
 
-for file_name in sorted_files:
-    print(f"Vessel Index {get_vessel_index(file_name)}")
-    file_path = os.path.join('/Users/lohithkonathala/iib_project/central_axis_kymographs', file_name)
-    flow_velocity = est_central_velocity(file_path, scale_factor = 3.676, time_factor = 1.667)
-    axial_flow_velocities.append(flow_velocity)
+upper_bound_velocities, median_velocities, lower_bound_velocities, vessel_indices =  estimate_axial_velocity(central_kymo_dir)
 
-print(axial_flow_velocities)
-
-
+eng = matlab.engine.start_matlab()
+matlab_velocities = matlab.double(median_velocities)
+matlab_vessels_of_interest = matlab.double(vessels_of_interest)
+velocity_map = eng.visualise_velocity(segmentation_file_path, image_sequence_dir, matlab_velocities, matlab_vessels_of_interest)
+eng.quit()
 
 
 
