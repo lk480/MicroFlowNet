@@ -94,56 +94,6 @@ function [binary_image] = visualise_velocity(segmentation_file_path, image_seque
     % Initialize a new binary image for highlighted segments
     highlighted_segments = false(size(discon_mini)); % Initialize with the same size but all zeros
 
-    % Iterate through each vessel segment
-    for ii = 1:numel(stats)
-        % Find the rank of the current segment
-        rank = find(sortedIndices == ii);
-        disp(rank) % You can remove this disp if you don't need it anymore
-
-        % Check if the current segment's rank is in the vessels_of_interest
-        if ismember(rank, vessels_of_interest)
-            % Add this segment to the highlighted_segments image
-            highlighted_segments = highlighted_segments | (labeled == ii); % Add only the current segment
-        end
-    end
-
-    % Now highlighted_segments contains only the vessels of interest
-
-    % Overlay only the highlighted segments
-    highlighted_rgb = label2rgb(imdilate(highlighted_segments, strel('disk',1)), jet(max(highlighted_segments(:))), 'k', 'shuffle');
-    overlayed_image_highlighted = imadd(first_img_rgb, uint8(highlighted_rgb)); % Only add highlighted
-
-    % Display the overlayed image with annotations for highlighted segments only
-    figure;
-    imshow(overlayed_image_highlighted);
-    hold on;
-
-    % Add length and rank annotations to the figure for highlighted segments
-    for ii = 1:numel(stats)
-        % Find the rank of the current segment
-        rank = find(sortedIndices == ii);
-
-        % Check if the current segment's rank is in the vessels_of_interest
-        if ismember(rank, vessels_of_interest)
-            interestIndex = find(vessels_of_interest == rank);
-            if ~isempty(interestIndex)
-                % Correcting for potential multiple matches, just use first one
-                interestIndex = interestIndex(1);
-                % Create the annotation text (length and rank)
-                annotationText = sprintf('* %0.1f pixels, Rank: %d', velocities(interestIndex), rank);
-                % Add the text to the image
-                text(stats(ii).Centroid(1), stats(ii).Centroid(2), annotationText, ...
-                    'FontUnits', 'normalized', 'Color', [0 0 0]);
-            end
-        end
-    end
-
-    title("Isolated Vessel Segments of Interest");
-    hold off;
-
-    % Use uiwait to keep the figure open until manually closed
-    %uiwait(gcf);
-
     % Initialize a new RGB image for velocity-colored segments
     colored_segments = uint8(zeros([size(discon_mini), 3]));  % Assuming 'discon_mini' is your binary image size
 
@@ -186,9 +136,31 @@ function [binary_image] = visualise_velocity(segmentation_file_path, image_seque
     % Overlay the colored vessel segments on the first image
     overlayed_colored_image = imadd(first_img_rgb, colored_segments);
 
-    % Display the overlayed image
+    % Display the overlayed image with annotations for highlighted segments only
     figure;
     imshow(overlayed_colored_image);
-    title('Vessel Segments Colored by Velocity');
+    hold on;
+
+    % Add length and rank annotations to the figure for highlighted segments
+    for ii = 1:numel(stats)
+        % Find the rank of the current segment
+        rank = find(sortedIndices == ii);
+
+        % Check if the current segment's rank is in the vessels_of_interest
+        if ismember(rank, vessels_of_interest)
+            interestIndex = find(vessels_of_interest == rank);
+            if ~isempty(interestIndex)
+                % Correcting for potential multiple matches, just use first one
+                interestIndex = interestIndex(1);
+                % Create the annotation text (length and rank)
+                annotationText = sprintf('* %0.1f \\mu m/s, Rank: %d', velocities(interestIndex), rank);
+                % Add the text to the image
+                text(stats(ii).Centroid(1), stats(ii).Centroid(2), annotationText, ...
+                    'FontUnits', 'normalized', 'Color', [0 0 0]);
+            end
+        end
+    end
+
+    title("Velocity Map");
     hold off;
     uiwait(gcf);

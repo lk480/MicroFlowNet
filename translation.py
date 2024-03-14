@@ -48,6 +48,38 @@ def param_spline(x_data, y_data, smoothing_factor, order):
     out_dx_dy = splev(unew, tck, der=1)
     return out, out_dx_dy
 
+def split_segment(x_data, y_data, num_segments=3):
+    # Ensure x_data and y_data are numpy arrays for easier slicing
+    x_data = np.array(x_data)
+    y_data = np.array(y_data)
+    
+    # Calculate the size of each segment
+    total_points = len(x_data)
+    points_per_segment = total_points // num_segments  # Use floor division to ensure an integer result
+    
+    # Initialize lists to hold the segment data
+    segments_x = []
+    segments_y = []
+    
+    # Create each segment
+    for i in range(num_segments):
+        # Calculate the start and end indices for the current segment
+        start_idx = i * points_per_segment
+        # For the last segment, go all the way to the end of the data array
+        end_idx = (i + 1) * points_per_segment if i < num_segments - 1 else total_points
+        
+        # Extract the segment and add it to the lists
+        segment_x = x_data[start_idx:end_idx]
+        segment_y = y_data[start_idx:end_idx]
+        
+        segments_x.append(segment_x)
+        segments_y.append(segment_y)
+    
+    return segments_x, segments_y
+   
+   
+   
+
 
 
 

@@ -40,9 +40,13 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     % Find branch points
     branch_points = bwmorph(bw_skel_clean,'branchpoints');
     edtimage = 2 * bwdist(~binary_image);
+    %imshow(edtimage, []); % Display the distance transform image
 
     %diameterImage has the diameter value on all points on skeleton
     diameterImage = edtimage .* double(bw_skel_clean);
+    %imshow(diameterImage, []); % Display the skeleton thickness image
+    csv_filename = '/Users/lohithkonathala/iib_project/diameterImage.csv';
+    writematrix(diameterImage, csv_filename);
 
     branch_points_dilate = imdilate(branch_points, strel('disk',1));
 
@@ -66,6 +70,15 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     for k = 1:3
         first_img_rgb(:,:,k) = first_img_rgb(:,:,k) .* uint8(~discon) + uint8(discon) * overlay_color(k);
     end
+
+    img = repmat(img, 1, 1, 3);
+
+    % Overlay the modified skeleton on the segmentation
+    for k = 1:3
+        img(:,:,k) = img(:,:,k) .* uint8(~discon) + uint8(discon) * overlay_color(k);
+    end
+
+    imwrite(img, '/Users/lohithkonathala/iib_project/overlaid_skeletonized_image.png');
 
 
     % Reset first image
@@ -129,6 +142,9 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
 
     % Now find the actual segment using this index
     target_order = find_order(CC.PixelIdxList{index}, size(binary_image));
+    disp(target_order);
+
+
 
     % Create a binary image of the selected segment
     selected_segment = false(size(binary_image));  % Initialize with all zeros

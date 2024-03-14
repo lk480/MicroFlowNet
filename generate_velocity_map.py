@@ -38,7 +38,7 @@ else:
 
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
-vessels_of_interest = [1, 2, 4, 5, 6, 9, 50, 54, 61]
+vessels_of_interest = [1, 2, 4, 5, 6, 9]
 for vessel_index in vessels_of_interest:
     binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, vessel_index)
 eng.quit()

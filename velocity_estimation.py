@@ -15,6 +15,8 @@ def get_vessel_index(file_name):
     base_name = "central_axis_kymograph_"
     # Removes the prefix and the '.png' part, then converts to integer
     index_part = file_name[len(base_name): -4]  # Removes the specific prefix and ".png"
+    integer_index = int(index_part)
+    print(integer_index)
     return int(index_part)
 
 
@@ -52,6 +54,8 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
         center_x = width // 2
         center_y = height // 2
         log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
+        plt.imshow(log_magnitude_spectrum)
+        plt.show()
 
         height, width = np.shape(log_magnitude_spectrum)
 
@@ -61,7 +65,7 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
         scaled_spectrum = ((log_magnitude_spectrum - min_val) / (max_val - min_val)) * 255
         scaled_spectrum = scaled_spectrum.astype(np.uint8)
 
-        _, thresh_image = cv2.threshold(scaled_spectrum, 110, 255, cv2.THRESH_BINARY)
+        _, thresh_image = cv2.threshold(scaled_spectrum, 100, 255, cv2.THRESH_BINARY)
 
         # Find the coordinates of white pixels
         y, x = np.where(thresh_image == 255)
@@ -69,7 +73,9 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
         # Combine x and y into a single array and sort by x
         points = np.column_stack((x, y))
 
-        if len(points) < 80:
+        print(len(points))
+
+        if len(points) < 40:
             print('Segment Outside the Vessel')
             print("Velocity Estimate is 0")
             upper_bound_velocities.append(0)
@@ -89,14 +95,15 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
         x_filtered = np.array(filtered_points[:, 0])
         y_filtered = np.array(filtered_points[:, 1])
 
-        thresh1 = 50  # Set your specific lower threshold value for y
-        thresh2 = 65  # Set your specific upper threshold value for y
+        thresh1 = min(y_filtered) + 9 # Set your specific lower threshold value for y
+        print(f"Threshold 1: {thresh1} ")
+        thresh2 = max(y_filtered) - 9 # Set your specific upper threshold value for y
+        print(f"Threshold 2: {thresh2} ")
 
         if visualise:
             # Plot horizontal lines for thresh1 and thresh2
             plt.axhline(y=thresh1, color='blue', linestyle='--', label=f'Thresh1 = {thresh1}')
             plt.axhline(y=thresh2, color='green', linestyle='--', label=f'Thresh2 = {thresh2}')
-
             plt.scatter(x_filtered, y_filtered, color='blue')
 
             # Adding labels, title, and legend
@@ -204,6 +211,7 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
     lower_errors = [value - lower for lower, value in zip(lower_bound_velocities, median_velocities)]
     upper_errors = [upper - value for upper, value in zip(upper_bound_velocities, median_velocities)]
     asymmetric_error = np.array([lower_errors, upper_errors])
+    asymmetric_error = np.abs(asymmetric_error)
 
     # Create the plot
     plt.figure()

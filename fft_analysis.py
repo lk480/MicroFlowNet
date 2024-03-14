@@ -3,28 +3,12 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.stats import linregress
 from scipy import stats
-from auto_texture import get_translation_factor, generate_FFT, window_function
+from auto_texture import get_translation_factor, generate_FFT, window_function, convert_translation_factor
 import matplotlib.image as mpimg
 import os
 
-kymo_dir_list = ['/Users/lohithkonathala/iib_project/kymographs_affine', 
-                 '/Users/lohithkonathala/iib_project/kymographs_affine_cropped', 
-                 '/Users/lohithkonathala/iib_project/kymographs_affine_cropped_ecc',
-                 '/Users/lohithkonathala/iib_project/kymographs_affine_ecc',
-                 '/Users/lohithkonathala/iib_project/kymographs_rigid_body',
-                 '/Users/lohithkonathala/iib_project/kymographs_rigid_body_cropped',
-                 '/Users/lohithkonathala/iib_project/kymographs_rigid_body_cropped_ecc',
-                 '/Users/lohithkonathala/iib_project/kymographs_rigid_body_ecc']
-
-labels = ['Affine', 
-          'Affine Cropped', 
-          'Affine + ECC Cropped', 
-          'Affine + ECC', 
-          'Rigid Body',
-          'Rigid Body Cropped',
-          'Rigid Body + ECC Cropped',
-          'Rigid Body + ECC'
-          ]
+kymo_dir_list = ['/Users/lohithkonathala/iib_project/kymographs_rigid_body_cropped']
+labels = ['Rigid Body Cropped']
 
 error_list = []
 median_velocities_list = []
@@ -49,17 +33,26 @@ for idx, kymograph_dir in enumerate(kymo_dir_list):
 
     for file_name in sorted_files:
         print(f"Translation Factor {get_translation_factor(file_name)}")
-        translation_factors.append(get_translation_factor(file_name))
+        translation_factor = get_translation_factor(file_name)
+        converted_translation_factor = convert_translation_factor(translation_factor, 3.676)
+        translation_factors.append(converted_translation_factor)
         file_path = os.path.join(kymograph_dir, file_name)
         image = mpimg.imread(file_path, cv2.IMREAD_GRAYSCALE)
 
         #Spatial FFT
-        windowed_image = window_function(image)
+        image = image[:80, 0:48]
+        print(f"Shape of Image is {np.shape(image)} ")
+
         fft_shifted, magnitude_spectrum, log_magnitude_spectrum = generate_FFT(image)
         height, width = np.shape(log_magnitude_spectrum)
         center_x = width // 2
         center_y = height // 2
-        log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
+
+        if visualise:
+            plt.imshow(image, cmap='gray')
+            plt.show()
+            plt.imshow(log_magnitude_spectrum, cmap='gray')
+            plt.show()
 
         height, width = np.shape(log_magnitude_spectrum)
 
@@ -76,7 +69,7 @@ for idx, kymograph_dir in enumerate(kymo_dir_list):
         # Combine x and y into a single array and sort by x
         points = np.column_stack((x, y))
 
-        if len(points) < 80:
+        if len(points) < 50:
             print('Segment Outside the Vessel')
             print("Velocity Estimate is 0")
             upper_bound_velocities.append(0)
@@ -96,8 +89,10 @@ for idx, kymograph_dir in enumerate(kymo_dir_list):
         x_filtered = np.array(filtered_points[:, 0])
         y_filtered = np.array(filtered_points[:, 1])
 
-        thresh1 = 50  # Set your specific lower threshold value for y
-        thresh2 = 65  # Set your specific upper threshold value for y
+        thresh1 = min(y_filtered) + 4 # Set your specific lower threshold value for y
+        print(f"Threshold 1: {thresh1} ")
+        thresh2 = max(y_filtered) - 4 # Set your specific upper threshold value for y
+        print(f"Threshold 2: {thresh2} ")
 
         if visualise:
             # Plot horizontal lines for thresh1 and thresh2
@@ -152,10 +147,44 @@ for idx, kymograph_dir in enumerate(kymo_dir_list):
         x_thresholded_filtered = np.array(x_thresholded_filtered)
         y_thresholded_filtered = np.array(y_thresholded_filtered)
 
+        #Arbitrary Scaling Factor
+        K = 1.4
 
         slope, intercept, r_value, p_value, std_err = linregress(x_thresholded_filtered, y_thresholded_filtered)
 
         print(f"Final R^2 Value {np.abs(r_value)} and Std Error {std_err}")
+
+        if visualise:
+            y_vals = intercept + slope * x_filtered_within_bounds
+            plt.plot(x_filtered_within_bounds, y_vals, 'r')
+            plt.imshow(log_magnitude_spectrum)
+            plt.show()
+
+        perpendicular_slope = K * -1 / slope 
+        img_height, img_width = np.shape(image)
+        
+        # Center point of the image
+        center_x, center_y = img_width / 2, img_height / 2
+        
+        # Since the line should pass through the center, we can find the intercept using y = mx + c
+        # Rearranging for c (the intercept): c = y - mx
+        perpendicular_intercept = center_y - perpendicular_slope * center_x
+        
+        # Now, set up the x values over which to draw the line. 
+        # If you want the line to span the entire width of the image, keep x_scale as is.
+        x_scale = np.linspace(0, img_width, 100)
+        
+        # Calculate the y values based on the slope and intercept, making sure the line goes through the center
+        y_vals = perpendicular_slope * x_scale + perpendicular_intercept
+
+        y_vals_fft = intercept + slope * x_scale 
+        plt.imshow(image, cmap='gray')  # Show the image
+        plt.xlim([0, 50])  # Set x-axis limits to match image width
+        plt.ylim([48, 0])  # Set y-axis limits to match image height; reversed for typical image coordinate system
+        figure_name = f'space_time_with_angle_{translation_factor}.png'
+        plt.axis('off')
+        plt.savefig(figure_name, bbox_inches='tight', pad_inches=0)
+
 
         n = len(x_thresholded_filtered)  # Number of data points
         df = n - 2  # Degrees of freedom for t-distribution
@@ -228,16 +257,17 @@ for idx, kymograph_dir in enumerate(kymo_dir_list):
     plt.figure()
     plt.errorbar(translation_factors, median_velocities, yerr=asymmetric_error,  capsize=5, capthick=2, ecolor='red', marker='s', markersize=5, linestyle='--', linewidth=2, label=labels[idx])
     plt.legend()
+    
     # Customize the plot
     plt.title('Velocity Profile with Upper and Lower Bounds (95% Confidence Interval)')
-    plt.xlabel('Translation Factor')
-    plt.ylabel('Velocity')
+    plt.xlabel('Translation Factor ($\mu m$)')
+    plt.ylabel('Velocity ($\mu m /s$) ')
 
     # Show the plot
     plt.savefig(f'velocity_profile_{labels[idx]}.png', format='png')  
 
-assert len(median_velocities_list) == 8
-assert len(error_list) == 8  
+assert len(median_velocities_list) == 1
+assert len(error_list) == 1
 
 # After processing all directories, plot the data on the same graph
 plt.figure()

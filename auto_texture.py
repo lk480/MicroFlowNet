@@ -136,6 +136,9 @@ def get_translation_factor(file_name):
     except ValueError:
         return 0.0  # Default value in case of any conversion error
 
+def convert_translation_factor(translation_factor, scale_factor):
+    offset = translation_factor * scale_factor
+    return offset
 
 
 

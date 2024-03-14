@@ -6,7 +6,7 @@ import matlab.engine
 import cv2
 from PIL import Image
 from segmentation_model import load_hvi_image, SA_UNet
-from translation import get_pixel_data, param_spline, translate_spline, draw_points
+from translation import get_pixel_data, param_spline, translate_spline, draw_points, split_segment
 from velocity_estimation import generate_velocity_profile
 
 #Specify Directories
@@ -14,6 +14,7 @@ hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_fin
 segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation.png'
 image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
+sub_segment_file_path = '/Users/lohithkonathala/iib_project/vessel_sub_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
 
@@ -31,7 +32,7 @@ else:
     prediction = model.predict(hvi_image_batched)
     predicted_segmentation = prediction[0]*255.0
     print(np.shape(predicted_segmentation))
-    _, predicted_segmentation_thresholded = cv2.threshold(predicted_segmentation, 100, 255, cv2.THRESH_BINARY)
+    _, predicted_segmentation_thresholded = cv2.threshold(predicted_segmentation, 110, 255, cv2.THRESH_BINARY)
     cv2.imwrite(segmentation_file_path, predicted_segmentation)
 
 #Generate Central Axis Kymograph
@@ -39,6 +40,7 @@ eng = matlab.engine.start_matlab()
 binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, 1)
 eng.quit()
 
+#Split Segment
 x_data, y_data, img_shape = get_pixel_data(segment_file_path)
 height, width = img_shape
 
@@ -60,4 +62,4 @@ eng.quit()
 kymograph_directory = '/Users/lohithkonathala/iib_project/kymographs'
 
 # Generate Velocity Profile
-generate_velocity_profile(kymograph_directory)
+generate_velocity_profile(kymograph_directory, visualise=True)
