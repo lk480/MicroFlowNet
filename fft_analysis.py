@@ -288,15 +288,11 @@ for idx, kymograph_dir in enumerate(kymo_dir_list):
         print(f"Difference is: {diff}")
         
         if diff > median_velocity:
-            print('DIFF TRIGGERED')
-            print(f"OLD UPPER BOUND VELOCITY {upper_bound_velocity}")
-            print(f"OLD LOWER BOUND VELOCITY {lower_bound_velocity}")
+            print('REFIT')
             orientation_estimate, max_orientation_estimate, min_orientation_estimate = estimate_orientation(filtered_points, tightness =  5)    
             upper_bound_velocity = get_velocity(50, min_orientation_estimate, 3.676, 1.667)
-            print(f"NEW UPPER BOUND VELOCITY {upper_bound_velocity}")
             median_velocity = get_velocity(50, orientation_estimate, 3.676, 1.667)
             lower_bound_velocity = get_velocity(50, max_orientation_estimate, 3.676, 1.667)
-            print(f"NEW LOWER BOUND VELOCITY {lower_bound_velocity}")
 
         upper_bound_velocities.append(upper_bound_velocity)
         median_velocities.append(median_velocity)
