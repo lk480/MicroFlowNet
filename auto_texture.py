@@ -5,18 +5,42 @@ import matplotlib.image as mpimg
 import os
 
 def generate_FFT(stiv_array):
+    """
+    Args:
+        stiv_array (arr): array containing space-time image (i.e. position on y-axis and time on x-axis - a.k.a kymograph)
+
+    Returns:
+        tuple: fft_shifted, magnitude_spectrum, log_magnitude_spectrum
+    """
     fft_image = np.fft.fft2(stiv_array)
     fft_shifted = np.fft.fftshift(fft_image)
-    magnitude_spectrum = np.abs(fft_shifted)
+    magnitude_spectrum = np.abs(fft_shifted)         
     log_magnitude_spectrum = np.log1p(magnitude_spectrum)
     return fft_shifted, magnitude_spectrum, log_magnitude_spectrum
 
 def low_pass_filter(stiv_array):
+    """
+    Args:
+        stiv_array (arr): array containing space-time image (i.e. position on y-axis and time on x-axis - a.k.a kymograph)
+
+    Returns:
+        arr: low-pass filtered space-time image
+    """
     blurred_image = cv2.GaussianBlur(stiv_array, (5, 5), 0)
     normalized_image = np.uint8(255 * blurred_image)
     return normalized_image
 
 def histogram_of_gradients(image, visualize=True):
+    """Function to compute histogram of gradients for a given space-time image followed by selection of the pre-dominant texture
+
+    Args:
+        image (arr): image stored as a NumPy array  
+        visualize (bool, optional): _description_. Defaults to True.
+
+    Returns:
+        tuple: predominant_orientation, probability_distribution
+    """
+
     # Preprocess the image with Gaussian Blur to reduce noise
     blurred_image = cv2.GaussianBlur(image, (5, 5), 0)
     # Normalize the image
@@ -61,6 +85,14 @@ def histogram_of_gradients(image, visualize=True):
     return predominant_orientation, prob_dist
 
 def window_function(image):
+    """Function to apply a Hanning window to the image
+
+    Args:
+        image (arr): image stored as NumPy array
+
+    Returns:
+        arr: image with window function applied
+    """
     M, N = np.shape(image)
     W_m = 0.5 * (1 - np.cos(2 * np.pi * np.arange(M) / M))
     W_n = 0.5 * (1 - np.cos(2 * np.pi * np.arange(N) / N))
