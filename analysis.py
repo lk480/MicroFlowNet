@@ -17,7 +17,6 @@ segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 sub_segment_file_path = '/Users/lohithkonathala/iib_project/vessel_sub_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
-#kymograph_directory = '/Users/lohithkonathala/iib_project/kymographs_affine_cropped_denoised'
 
 analysis = True
 
@@ -62,6 +61,3 @@ if analysis == True:
         print(np.round(t_factor, 1)) 
         binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor) #Generate Kymograph for Translated Segment
     eng.quit()
-
-"""Generate Velocity Profile"""
-#generate_velocity_profile(kymograph_directory, visualise=False, verbose=True)
