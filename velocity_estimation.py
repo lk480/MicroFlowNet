@@ -54,8 +54,9 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
         center_x = width // 2
         center_y = height // 2
         log_magnitude_spectrum = cv2.resize(log_magnitude_spectrum, (width, height), interpolation=cv2.INTER_CUBIC)
-        plt.imshow(log_magnitude_spectrum)
-        plt.show()
+        if visualise:
+            plt.imshow(log_magnitude_spectrum)
+            plt.show()
 
         height, width = np.shape(log_magnitude_spectrum)
 
@@ -65,7 +66,7 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
         scaled_spectrum = ((log_magnitude_spectrum - min_val) / (max_val - min_val)) * 255
         scaled_spectrum = scaled_spectrum.astype(np.uint8)
 
-        _, thresh_image = cv2.threshold(scaled_spectrum, 100, 255, cv2.THRESH_BINARY)
+        _, thresh_image = cv2.threshold(scaled_spectrum, 115, 255, cv2.THRESH_BINARY)
 
         # Find the coordinates of white pixels
         y, x = np.where(thresh_image == 255)
@@ -100,6 +101,7 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
         thresh2 = max(y_filtered) - 9 # Set your specific upper threshold value for y
         print(f"Threshold 2: {thresh2} ")
 
+
         if visualise:
             # Plot horizontal lines for thresh1 and thresh2
             plt.axhline(y=thresh1, color='blue', linestyle='--', label=f'Thresh1 = {thresh1}')
@@ -118,6 +120,8 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
 
         # Apply this mask to filter 'filtered_points'
         filtered_points_within_bounds = filtered_points[mask]
+
+        print(len(filtered_points_within_bounds))
 
         # If you need to extract x and y arrays separately after this filtering
         x_filtered_within_bounds = filtered_points_within_bounds[:, 0]
@@ -155,7 +159,6 @@ def generate_velocity_profile(kymograph_dir, visualise=False, verbose=False):
 
         slope, intercept, r_value, p_value, std_err = linregress(x_thresholded_filtered, y_thresholded_filtered)
 
-        print(f"Final R^2 Value {np.abs(r_value)} and Std Error {std_err}")
 
         n = len(x_thresholded_filtered)  # Number of data points
         df = n - 2  # Degrees of freedom for t-distribution
@@ -267,7 +270,7 @@ def estimate_axial_velocity(central_kymograph_dir, visualise=False, verbose=Fals
         # Combine x and y into a single array and sort by x
         points = np.column_stack((x, y))
 
-        if len(points) < 70:
+        if len(points) < 40:
             print('Segment Outside the Vessel')
             print("Velocity Estimate is 0")
             upper_bound_velocities.append(0)
