@@ -4,6 +4,7 @@ from tqdm import tqdm
 from pystackreg import StackReg
 from skimage import io
 import numpy as np
+import matplotlib.pyplot as plt
 
 def stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, 
                        frame_rate, video_path, stabilised_frames_folder, 
@@ -123,33 +124,34 @@ def mii_generator(folder_path, image_end_frame, image_start_frame, img_width, im
 
 
 #Specify Directories
-image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/raw_hvi_sequences.noysnc/V4HYP1001LT0-220'
-video_path = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body.mp4'
-stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body'
+image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/20230905_Jed_20x_1.1_final'
+video_path = '/Users/lohithkonathala/Documents/IIB Project/20x_rigid_body.mp4'
+stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/20x_rigid_body'
 
 #Specify Sequence Properties
-img_frame_start = 0
-img_frame_end = 50
+img_frame_start = 590
+img_frame_end = 640
 frame_rate = 30
 
 #Apply Affine Stabilisation to Test Sequence 
-#stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder, transformation_mode=StackReg.AFFINE)
+stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder, transformation_mode=StackReg.RIGID_BODY)
 
 #Crop Image
-x_topleft = 775
+x_topleft = 475
 y_topleft = 300
 width = 512
 height = 512
 
-input_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body'
-output_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_cropped'
+input_folder = '/Users/lohithkonathala/Documents/IIB Project/20x_rigid_body'
+output_folder = '/Users/lohithkonathala/Documents/IIB Project/20x_rigid_body_cropped'
 
-#crop_frame(x_topleft, y_topleft, width, height, input_folder, output_folder)
+
+crop_frame(x_topleft, y_topleft, width, height, input_folder, output_folder)
 
 #Apply Rigid Body Stabilisation to Cropped Sequence
-image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_cropped'
-video_path = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final.mp4'
-stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final'
+image_sequence_folder =  '/Users/lohithkonathala/Documents/IIB Project/20x_rigid_body_cropped'
+video_path = '/Users/lohithkonathala/Documents/IIB Project/20x_rigid_body_final.mp4'
+stabilised_frames_folder = '/Users/lohithkonathala/Documents/IIB Project/20x_rigid_body_final'
 
 #Specify Sequence Properties
 img_frame_start = 0
@@ -159,5 +161,4 @@ frame_rate = 30
 #stabilise_sequence(image_sequence_folder, img_frame_start, img_frame_end, frame_rate, video_path, stabilised_frames_folder, transformation_mode=StackReg.RIGID_BODY)
 
 #Generate MII 
-folder_path = '/Users/lohithkonathala/Documents/IIB Project/12x_affine'
-mii_generator(folder_path, image_end_frame=9, image_start_frame=0, img_width=1360, img_height=1024)
+#mii_generator(stabilised_frames_folder, image_end_frame=9, image_start_frame=0, img_width=512, img_height=512)

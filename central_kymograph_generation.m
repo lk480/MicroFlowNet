@@ -85,7 +85,7 @@ function [binary_image] = central_kymograph_generation(segmentation_file_path, i
     first_img_rgb = repmat(first_img, 1, 1, 3);
 
     % Parameters
-    min_length = 80; % Minimum size threshold
+    min_length = 30; % Minimum size threshold
 
     % Remove objects smaller than the minimum size
     discon_mini = bwareaopen(discon, min_length, 8);

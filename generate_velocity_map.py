@@ -38,14 +38,11 @@ else:
 
 #Generate Central Axis Kymograph 
 eng = matlab.engine.start_matlab()
-vessels_of_interest = [1, 2, 4, 5, 6, 9]
-for vessel_index in vessels_of_interest:
-    binary_image = eng.central_kymograph_generation(segmentation_file_path, image_sequence_dir, vessel_index)
-eng.quit()
+vessels_of_interest = [1, 3, 5, 6, 9, 10, 11, 12, 13, 16, 18, 19, 22, 23, 24, 26, 27, 28, 30, 31, 33, 37, 39, 40, 45, 46, 48, 50]
 
 central_kymo_dir = '/Users/lohithkonathala/iib_project/central_axis_kymographs'
 
-upper_bound_velocities, median_velocities, lower_bound_velocities, vessel_indices =  estimate_axial_velocity(central_kymo_dir)
+upper_bound_velocities, median_velocities, lower_bound_velocities, vessel_indices =  estimate_axial_velocity(central_kymo_dir, visualise=False)
 
 eng = matlab.engine.start_matlab()
 matlab_velocities = matlab.double(median_velocities)

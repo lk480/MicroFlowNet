@@ -6,7 +6,8 @@ from segmentation_model import load_hvi_image
 from keras.optimizers import Adam
 from segmentation_model import SA_UNet
 import tensorflow as tf
-from keras.callbacks import ReduceLROnPlateau
+import datetime
+from keras.callbacks import ReduceLROnPlateau, TensorBoard
 
 
 #File Paths/Directories
@@ -21,9 +22,12 @@ def model_fine_tune(training_data, validation_data, pretrained_weight_filepath, 
         layer.trainable = False
     
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, min_lr=0.00001, verbose=1)
+    log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard_callback = TensorBoard(log_dir=log_dir, histogram_freq=1)
     model.compile(optimizer=Adam(), loss='binary_crossentropy', metrics=['accuracy'])
-    model.fit(training_data, epochs=10, callbacks=[reduce_lr], validation_data=validation_data)
+    history = model.fit(training_data, epochs=10, callbacks=[reduce_lr, tensorboard_callback], validation_data=validation_data)
     model.save(fine_tuned_weight_filepath)
+    return history
 
 #Load HVI and Ground Truths
 x1 = load_hvi_image('/Users/lohithkonathala/Documents/IIB Project/HVI_Manual_Annotations/jed_eye_affine_MII.pgm')
@@ -64,8 +68,21 @@ train_dataset = train_data.cache().prefetch(buffer_size=AUTOTUNE)
 val_dataset = val_data.cache().prefetch(buffer_size=AUTOTUNE)
 
 # Fine Tune Model (assuming you've updated the model_fine_tune function to accept validation data)
-model_fine_tune(train_dataset, val_dataset, pretrained_weight_filepath, fine_tuned_weight_filepath)
+history = model_fine_tune(train_dataset, val_dataset, pretrained_weight_filepath, fine_tuned_weight_filepath)
 
+# Plot training and validation loss using Matplotlib
+bce_loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs_range = range(len(bce_loss))
+
+plt.figure(figsize=(8, 6))
+plt.plot(epochs_range, bce_loss, label='Training BCE Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.title('Training and Validation Loss')
+plt.legend(loc='upper right')
+plt.show()
 
 
 

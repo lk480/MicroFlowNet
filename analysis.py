@@ -7,16 +7,17 @@ import cv2
 from PIL import Image
 from segmentation_model import load_hvi_image, SA_UNet
 from translation import get_pixel_data, param_spline, translate_spline, draw_points, split_segment
-from velocity_estimation import generate_velocity_profile
+from velocity_estimation import velocity_profile
 
 """Specify Directories"""
-hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final_denoised/MII_start_0_end_9.pgm'
+hvi_file_path = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final/MII_start_0_end_9.pgm'
 segmentation_file_path = '/Users/lohithkonathala/iib_project/vessel_segmentation.png'
-image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final_denoised'
+image_sequence_dir = '/Users/lohithkonathala/Documents/IIB Project/12x_rigid_body_final'
 segment_file_path = '/Users/lohithkonathala/iib_project/vessel_segment.png'
 sub_segment_file_path = '/Users/lohithkonathala/iib_project/vessel_sub_segment.png'
 translated_segment_file_path = '/Users/lohithkonathala/iib_project/translated_vessel_segment.png'
 weight_file_path = '/Users/lohithkonathala/iib_project/sa_unet_CHASE_weights.h5'
+kymo_dir = '/Users/lohithkonathala/iib_project/kymographs'
 
 analysis = True
 
@@ -26,7 +27,6 @@ if analysis == True:
     model = SA_UNet() #Choose segmentation model i.e. SA_UNet
     model.load_weights(weight_file_path) #Load model weights 
     hvi_image_batched = tf.expand_dims(hvi_image, axis=0) #Introduce batch dimensions for compatibility with CNN input layer
-
     if np.shape(hvi_image_batched)[0] is None:
         print("ERROR: Data has not been batched") 
         raise ValueError("Image must have batch dimensions")
@@ -49,8 +49,9 @@ if analysis == True:
     height, width = img_shape
 
     """Generate Translated Axis Kymographs i.e. Determine Velocity Variation Across Vessel Diameter  """
+    
     eng = matlab.engine.start_matlab()
-    for t_factor in np.linspace(-7, 7, 20): #Set bounds for the translation factor 
+    for t_factor in np.linspace(-4, 4, 20): #Set bounds for the translation factor 
         out, out_dx_dy = param_spline(x_data, y_data, smoothing_factor = 8, order = 2) #Fit Parametric Spline
         translated_points = translate_spline(out, out_dx_dy, translation_factor = t_factor) #Translate Spline 
         image = np.zeros((height, width, 3), dtype=np.uint8) #Create empty image with matching dimensions 
@@ -61,3 +62,6 @@ if analysis == True:
         print(np.round(t_factor, 1)) 
         binary_image = eng.variable_axis_kymograph_generation(translated_segment_file_path, image_sequence_dir, t_factor) #Generate Kymograph for Translated Segment
     eng.quit()
+
+
+velocity_profile(kymo_dir, segment_start=0, segment_end=-1, threshold=100)

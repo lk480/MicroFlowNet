@@ -60,7 +60,7 @@ def estimate_orientation(filtered_points, tightness =  4):
     y_filtered = np.array(filtered_points[:, 1])
     thresh1 = min(y_filtered) + tightness
     thresh2 = max(y_filtered) - tightness
-
+ 
     mask = (filtered_points[:, 1] > thresh1) & (filtered_points[:, 1] < thresh2)
     filtered_points_within_bounds = filtered_points[mask]
 
@@ -229,15 +229,14 @@ def velocity_profile(kymograph_dir, segment_start, segment_end, threshold = 100)
         error_list.append(asymmetric_error)
         median_velocities_list.append(median_velocities)
 
-        # Create the plot
-        plt.figure()
-        plt.errorbar(translation_factors, median_velocities, yerr=asymmetric_error,  capsize=5, capthick=2, ecolor='red', marker='s', markersize=5, linestyle='--', linewidth=2, label=labels[idx])
-        plt.legend()
-        
-        # Customize the plot
-        plt.title('Velocity Profile with Upper and Lower Bounds (95% Confidence Interval)')
-        plt.xlabel('Translation Factor ($\mu m$)')
-        plt.ylabel('Velocity ($\mu m /s$) ')
+    # Create the plot
+    plt.figure()
+    plt.errorbar(translation_factors, median_velocities, yerr=asymmetric_error,  capsize=5, capthick=2, ecolor='red', marker='s', markersize=5, linestyle='--', linewidth=2)
+    # Customize the plot
+    plt.title('Velocity Profile with Upper and Lower Bounds (95% Confidence Interval)')
+    plt.xlabel('Translation Factor ($\mu m$)')
+    plt.ylabel('Velocity ($\mu m /s$) ')
+    plt.show()
 
 def estimate_axial_velocity(central_kymograph_dir, visualise=False, verbose=False):
 
@@ -281,7 +280,7 @@ def estimate_axial_velocity(central_kymograph_dir, visualise=False, verbose=Fals
         scaled_spectrum = ((log_magnitude_spectrum - min_val) / (max_val - min_val)) * 255
         scaled_spectrum = scaled_spectrum.astype(np.uint8)
 
-        _, thresh_image = cv2.threshold(scaled_spectrum, 110, 255, cv2.THRESH_BINARY)
+        _, thresh_image = cv2.threshold(scaled_spectrum, 100, 255, cv2.THRESH_BINARY)
 
         # Find the coordinates of white pixels
         y, x = np.where(thresh_image == 255)
@@ -289,7 +288,7 @@ def estimate_axial_velocity(central_kymograph_dir, visualise=False, verbose=Fals
         # Combine x and y into a single array and sort by x
         points = np.column_stack((x, y))
 
-        if len(points) < 40:
+        if len(points) < 60:
             print('Segment Outside the Vessel')
             print("Velocity Estimate is 0")
             upper_bound_velocities.append(0)
@@ -303,16 +302,30 @@ def estimate_axial_velocity(central_kymograph_dir, visualise=False, verbose=Fals
         filtered_points = filtered_points_x[filtered_points_x[:, 1] != center_y]
 
         if visualise:
-            plt.scatter(filtered_points[:, 0], filtered_points[:, 1], c='red', label='Filtered Points')
+            plt.scatter(filtered_points[:, 0], filtered_points[:, 1], c='red', label='Extracted Points')
+            plt.xlabel('X Co-ordinate')
+            plt.ylabel('Y Co-ordinate')
+            plt.title('Points Extracted from Spatial FFT')
+            plt.legend()
+            plt.gca().set_aspect('equal', adjustable='box')
             plt.show()
 
         x_filtered = np.array(filtered_points[:, 0])
         y_filtered = np.array(filtered_points[:, 1])
 
-        thresh1 = min(y_filtered) + 9 # Set your specific lower threshold value for y
+        thresh1 = min(y_filtered) + 7 # Set your specific lower threshold value for y
         print(f"Threshold 1: {thresh1} ")
-        thresh2 = max(y_filtered) - 9  # Set your specific upper threshold value for y
+        thresh2 = max(y_filtered) - 7  # Set your specific upper threshold value for y
         print(f"Threshold 2: {thresh2} ")
+
+
+        if len(x_filtered) < 80:
+            #Loosen Thresholds
+            thresh1 = min(y_filtered) + 2.5 # Set your specific lower threshold value for y
+            print(f"Threshold 1: {thresh1} ")
+            thresh2 = max(y_filtered) - 2.5  # Set your specific upper threshold value for y
+            print(f"Threshold 2: {thresh2} ")
+
 
         if visualise:
             # Plot horizontal lines for thresh1 and thresh2
@@ -348,6 +361,11 @@ def estimate_axial_velocity(central_kymograph_dir, visualise=False, verbose=Fals
         if visualise:
             plt.scatter(x_filtered_within_bounds, y_filtered_within_bounds, color='blue')
             plt.plot(x_filtered_within_bounds, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
+            plt.xlabel('X Coordinate')
+            plt.ylabel('Y Coordinate')
+            plt.title('Intial Fit (Stage 1 Regression)')
+            plt.legend()
+            plt.gca().set_aspect('equal', adjustable='box')
             plt.show()
 
         #Use intial estimate of regression line to compute residuals
@@ -399,11 +417,11 @@ def estimate_axial_velocity(central_kymograph_dir, visualise=False, verbose=Fals
             # Plot the filtered data
             plt.scatter(x_thresholded_filtered, y_thresholded_filtered, color='blue')
             plt.plot(x_thresholded_filtered, regression_line, color='red', label=f'y = {slope:.2f}x + {intercept:.2f}')
-            plt.xlabel('X-Value')
-            plt.ylabel('Y-Value')
-            plt.gca().set_aspect('equal', adjustable='box')
+            plt.xlabel('X Coordinate')
+            plt.ylabel('Y Coordinate')
+            plt.title('Re-Fit (Stage 2 Regression)')
             plt.legend()
-            # Show the plot
+            plt.gca().set_aspect('equal', adjustable='box')
             plt.show()
 
         orientation_estimate = np.arctan(np.abs(slope)) * (180/np.pi) + 90

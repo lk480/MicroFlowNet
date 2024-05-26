@@ -153,7 +153,7 @@ function [binary_image] = visualise_velocity(segmentation_file_path, image_seque
                 % Correcting for potential multiple matches, just use first one
                 interestIndex = interestIndex(1);
                 % Create the annotation text (length and rank)
-                annotationText = sprintf('* %0.1f \\mu m/s, Rank: %d', velocities(interestIndex), rank);
+                annotationText = sprintf('* %0.1f \\mu m/s', velocities(interestIndex));
                 % Add the text to the image
                 text(stats(ii).Centroid(1), stats(ii).Centroid(2), annotationText, ...
                     'FontUnits', 'normalized', 'Color', [0 0 0]);
